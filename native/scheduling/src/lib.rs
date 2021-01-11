@@ -1,9 +1,5 @@
 use rustler::{Encoder, Env, Error, Term};
 use chrono::NaiveDate;
-use serde::de::{self, MapAccess, SeqAccess, Visitor};
-use serde::ser::SerializeStruct;
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use std::fmt;
 
 mod atoms {
     rustler::rustler_atoms! {
@@ -17,7 +13,8 @@ mod atoms {
 rustler::rustler_export_nifs! {
     "Elixir.HyperSchedule.Scheduling",
     [
-        ("add", 2, add)
+        ("add", 2, add),
+        ("schedule", 2, schedule)
     ],
     None
 }
@@ -30,11 +27,12 @@ fn add<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
 }
 
 fn schedule<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
-    let participants = args[0].decode()?;
-    let slots = args[1].decode()?;
+    let participants: Vec<String> = args[0].decode()?;
+    let slots: Vec<String> = args[1].decode()?;
 
-    println!("Well parts:   {}  slots: {}", participants, slots);
-    Ok((atoms::ok()).encode(env))
+    println!("Well parts:   {:?}  slots: {:?}", participants, slots);
+
+    Ok((atoms::ok(), "smth").encode(env))
 }
 
 #[derive(Debug, Clone)]
