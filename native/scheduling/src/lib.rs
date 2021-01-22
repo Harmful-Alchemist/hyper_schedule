@@ -1,5 +1,5 @@
-use rustler::{Encoder, Env, Error, Term};
-use chrono::NaiveDate;
+use rustler::{Encoder, Env, Error, Term, NifStruct};
+use chrono::{NaiveDate, NaiveDateTime, NaiveTime};
 
 mod atoms {
     rustler::rustler_atoms! {
@@ -20,43 +20,44 @@ rustler::rustler_export_nifs! {
 }
 
 fn add<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
-    let num1: i64 = args[0].decode()?;
-    let num2: i64 = args[1].decode()?;
+    let num1: i64 = args[0].decode()?; //TODO return err atom
+    let num2: i64 = args[1].decode()?; //TODO return err atom
 
     Ok((atoms::ok(), num1 + num2).encode(env))
 }
 
 fn schedule<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
-    let participants: Vec<String> = args[0].decode()?;
-    let slots: Vec<String> = args[1].decode()?;
+    let participants: Vec<Participant> = args[0].decode()?;
+    let slots: Vec<i64> = args[1].decode()?;
 
-    println!("Well parts:   {:?}  slots: {:?}", participants, slots);
+    let result = schedule_rs(participants,slots);
 
-    Ok((atoms::ok(), "smth").encode(env))
+    Ok((atoms::ok(), result).encode(env))
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, NifStruct, Clone)]
+#[module = "HyperSchedule.Participant"]
 pub struct Participant {
     name: String,
-    // TODO timezone: TimeZone, Make it international, durations first
-    blocked: Vec<NaiveDate>,
-    scheduled: Vec<NaiveDate>,
+    // TODO timezone: TimeZone, Make it international, durations first. Since we are going to supply u32 timestamps can have translation switches in a bit mask?
+    blocked: Vec<i64>,
+    scheduled: Vec<i64>,
 }
-
 
 impl Participant {
     pub fn add_scheduled_date(&mut self, date: NaiveDate) {
-        self.scheduled.push(date);
+        self.scheduled.push(date.and_time(NaiveTime::from_num_seconds_from_midnight(1, 0)).timestamp());
     }
 }
 
-pub fn schedule_nat(mut participants: Vec<Participant>, slots: Vec<NaiveDate>) -> Vec<Participant> {
-    for slot in slots {
+pub fn schedule_rs(mut participants: Vec<Participant>, slots: Vec<i64>) -> Vec<Participant> {
+    for slot_timestamp in slots {
+        let slot = NaiveDateTime::from_timestamp(slot_timestamp, 0).date();
         // TODO this is dates but should be time slots. Also something with locations
         let sched_date = slot;
         let thing = participants
             .iter_mut()
-            .filter(|x| !x.blocked.iter().any(|y| y == &sched_date))
+            .filter(|x| !x.blocked.iter().any(|y| NaiveDateTime::from_timestamp(*y, 0).date() == sched_date))
             // .filter(|x| !x.scheduled.iter().any(|y| y == &(sched_date - Duration::days(1))) ) TODO extra rules
             // TODO
             .min_by(|x, y| x.scheduled.len().cmp(&y.scheduled.len()));
