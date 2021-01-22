@@ -20,9 +20,11 @@ defmodule HyperScheduleWeb.Router do
   end
 
   # Other scopes may use custom stacks.
-  # scope "/api", HyperScheduleWeb do
-  #   pipe_through :api
-  # end
+  scope "/api/v1", HyperScheduleWeb do
+    pipe_through :api
+
+    post "/schedule", ScheduleController, :schedule_api
+  end
 
   # Enables LiveDashboard only for development
   #
