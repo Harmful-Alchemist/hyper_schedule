@@ -10,7 +10,7 @@
   </head>
   <body>
     <header>
-      <section class="container">
+      <section class="bg-gray-100 rounded-xl p-8">
         <nav role="navigation">
           <ul>
             <li><a href="https://hexdocs.pm/phoenix/overview.html">Get Started</a></li>
