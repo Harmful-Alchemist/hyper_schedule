@@ -13,17 +13,9 @@ mod atoms {
 rustler::rustler_export_nifs! {
     "Elixir.HyperSchedule.Scheduling",
     [
-        ("add", 2, add),
         ("schedule", 2, schedule)
     ],
     None
-}
-
-fn add<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
-    let num1: i64 = args[0].decode()?; //TODO return err atom
-    let num2: i64 = args[1].decode()?; //TODO return err atom
-
-    Ok((atoms::ok(), num1 + num2).encode(env))
 }
 
 fn schedule<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
