@@ -62,6 +62,7 @@ defmodule HyperScheduleWeb.ScheduleTest do
     assert Enum.map(schedule, & &1.scheduled) != Enum.map(participants, & &1.scheduled)
     # 12 scheduled days
     assert Enum.flat_map(schedule, & &1.scheduled) |> Enum.count() == 12
+
     # We lose the time info, for now and see all dates we gave to schedule are scheduled, if no blocked dates interfere
     assert Enum.flat_map(schedule, & &1.scheduled)
            |> Enum.map(&DateTime.from_unix!/1)
