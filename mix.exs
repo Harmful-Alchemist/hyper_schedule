@@ -46,7 +46,10 @@ defmodule HyperSchedule.MixProject do
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
-      {:rustler, "~> 0.21.1"}
+      {:rustler, "~> 0.21.1"},
+      {:phoenix_live_view, "~> 0.15.3"},
+      {:floki, ">= 0.27.0", only: :test},
+      {:timex, "~> 3.6"}
     ]
   end
 
