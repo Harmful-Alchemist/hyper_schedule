@@ -1,4 +1,4 @@
-defmodule HyperScheduleWeb.ScheduleTest do
+defmodule HyperSchedule.ScheduleTest do
   use ExUnit.Case
   import HyperSchedule.Scheduling
 

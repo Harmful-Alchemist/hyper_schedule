@@ -34,7 +34,7 @@
  <! -- TODO add remove and select to add to blocked! -->
 </div>
 <% end %>
-<%= f = form_for @changeset, "#", [phx_submit: :add_participant, class: "p-10"] %>
+<%= f = form_for @changeset, "#", [phx_submit: :add_participant, class: "p-10", id: "participant-form"] %>
   <%= label f, :name %>
   <%= text_input f, :name %>
   <%= error_tag f, :name %>

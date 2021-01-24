@@ -9,7 +9,9 @@ defmodule HyperSchedule.CalendarDayComponent do
     scheduled_on_day =
       assigns.participants
       |> Enum.find(fn participant ->
-        Enum.any?(participant.scheduled, fn x -> Map.take(assigns.day, [:year, :month, :day]) == Map.take(x, [:year, :month, :day]) end)
+        Enum.any?(participant.scheduled, fn x ->
+          Map.take(assigns.day, [:year, :month, :day]) == Map.take(x, [:year, :month, :day])
+        end)
       end)
 
     ~L"""
