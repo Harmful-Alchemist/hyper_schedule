@@ -48,7 +48,14 @@ defmodule HyperScheduleWeb.CalendarLive do
       |> Enum.map(&DateTime.from_naive!(&1, "Etc/UTC"))
       |> Enum.map(&DateTime.to_unix/1)
 
-    timestamped_participants = Participants.naive_to_timestamps(socket.assigns.participants)
+    timestamped_participants =
+      socket.assigns.participants
+      |> Enum.map(fn participant ->
+        Map.update!(participant, :scheduled, fn scheduled ->
+          Enum.filter(scheduled, fn date -> Enum.member?(socket.assigns.selected_dates, date) end)
+        end)
+      end)
+      |> Participants.naive_to_timestamps()
 
     # TODO error handling
     {:ok, schedule} = Scheduling.schedule(timestamped_participants, slots)

@@ -113,5 +113,7 @@ defmodule HyperScheduleWeb.CalendarLiveTest do
       day = first_day_of_month |> Timex.shift(days: i) |> Timex.format!("%d", :strftime)
       assert scheduled =~ "#{day}\n  \n  <div class=\"text-bold bg-purple\">#{name}</div>"
     end
+
+    #    TODO rescheduling with added and removed date!
   end
 end
