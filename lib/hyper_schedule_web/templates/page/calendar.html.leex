@@ -22,10 +22,26 @@
     <%= for week <- @week_rows do %>
     <tr>
         <%= for day <- week do %>
-        <%= live_component @socket, HyperSchedule.CalendarDayComponent, day: day, selected_dates: @selected_dates, current_date: @current_date %>
+        <%= live_component @socket, HyperSchedule.CalendarDayComponent, day: day, selected_dates: @selected_dates, current_date: @current_date, participants: @participants %>
   <% end %>
     </tr>
     <% end %>
     </tbody>
 </table>
+<%= for participant <- @participants do %>
+<div>
+    <%= participant.name %>
+ <! -- TODO add remove and select to add to blocked! -->
+</div>
+<% end %>
+<%= f = form_for @changeset, "#", [phx_submit: :add_participant, class: "p-10"] %>
+  <%= label f, :name %>
+  <%= text_input f, :name %>
+  <%= error_tag f, :name %>
+
+  <%= submit "Add" %>
+</form>
+<%= if length(@participants) > 0 do %>
+<div phx-click="schedule">Schedule!</div>
+<% end %>
 </div>

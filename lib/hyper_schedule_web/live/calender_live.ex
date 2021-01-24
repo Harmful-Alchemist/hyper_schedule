@@ -1,6 +1,7 @@
 defmodule HyperScheduleWeb.CalendarLive do
   use Phoenix.LiveView
   use Timex
+  alias HyperSchedule.{Participants, Scheduling}
 
   @week_start_at :mon
 
@@ -13,7 +14,9 @@ defmodule HyperScheduleWeb.CalendarLive do
       current_date: current_date,
       day_names: day_names(@week_start_at),
       week_rows: week_rows(current_date),
-      selected_dates: []
+      selected_dates: [],
+      participants: [],
+      changeset: Participants.participant()
     ]
 
     {:ok, assign(socket, assigns)}
@@ -34,6 +37,31 @@ defmodule HyperScheduleWeb.CalendarLive do
         true -> [selected_dates: List.delete(selected_dates, picked_date)]
         false -> [selected_dates: [picked_date | selected_dates]]
       end
+
+    {:noreply, assign(socket, assigns)}
+  end
+
+  @impl true
+  def handle_event("schedule", _, socket) do
+    slots =
+      socket.assigns.selected_dates
+      |> Enum.map(&DateTime.from_naive!(&1, "Etc/UTC"))
+      |> Enum.map(&DateTime.to_unix/1)
+
+    timestamped_participants = Participants.naive_to_timestamps(socket.assigns.participants)
+
+    # TODO error handling
+    {:ok, schedule} = Scheduling.schedule(timestamped_participants, slots)
+
+    schedule = Participants.timestamps_to_naive(schedule)
+
+    assigns = [participants: schedule]
+    {:noreply, assign(socket, assigns)}
+  end
+
+  @impl true
+  def handle_event("add_participant", %{"participant" => params}, socket) do
+    assigns = [participants: [Participants.struct(params) | socket.assigns.participants]]
 
     {:noreply, assign(socket, assigns)}
   end

@@ -6,9 +6,18 @@ defmodule HyperSchedule.CalendarDayComponent do
   def render(assigns) do
     assigns = Map.put(assigns, :day_class, day_class(assigns))
 
+    scheduled_on_day =
+      assigns.participants
+      |> Enum.find(fn participant ->
+        Enum.any?(participant.scheduled, fn x -> Map.take(assigns.day, [:year, :month, :day]) == Map.take(x, [:year, :month, :day]) end)
+      end)
+
     ~L"""
     <td phx-click="pick-date" phx-value-date="<%= Timex.format!(@day, "%Y-%m-%d", :strftime) %>" class="<%= @day_class %>">
       <%= Timex.format!(@day, "%d", :strftime) %>
+      <%= if !is_nil(scheduled_on_day) do %>
+      <div class="text-bold bg-purple"><%= scheduled_on_day.name %></div>
+      <% end %>
     </td>
     """
   end
