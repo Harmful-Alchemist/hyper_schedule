@@ -52,7 +52,7 @@ defmodule HyperScheduleWeb.CalendarLive do
       socket.assigns.participants
       |> Enum.map(fn participant ->
         Map.update!(participant, :scheduled, fn scheduled ->
-          Enum.filter(scheduled, fn date -> Enum.member?(socket.assigns.selected_dates, date) end)
+          Enum.filter(scheduled, fn date -> Enum.member?(socket.assigns.selected_dates, Timex.shift(date, seconds: -1)) end)
         end)
       end)
       |> Participants.naive_to_timestamps()

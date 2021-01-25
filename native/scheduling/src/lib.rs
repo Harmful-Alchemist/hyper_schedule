@@ -43,18 +43,29 @@ impl Participant {
 }
 
 pub fn schedule_rs(mut participants: Vec<Participant>, slots: Vec<i64>) -> Vec<Participant> {
+    let pre_scheduled: Vec<NaiveDate> = participants.iter()
+        .flat_map(
+            |participant| participant.scheduled.clone().iter()
+            .map(|stamp| NaiveDateTime::from_timestamp(*stamp, 0).date())
+            .collect::<Vec<NaiveDate>>()
+        )
+        .collect();
+
     for slot_timestamp in slots {
         let slot = NaiveDateTime::from_timestamp(slot_timestamp, 0).date();
+        if pre_scheduled.iter().any(|scheduled| *scheduled == slot) {
+            continue;
+        }
         // TODO this is dates but should be time slots. Also something with locations
         let sched_date = slot;
         let thing = participants
             .iter_mut()
             .filter(|x| !x.blocked.iter().any(|y| NaiveDateTime::from_timestamp(*y, 0).date() == sched_date))
             // .filter(|x| !x.scheduled.iter().any(|y| y == &(sched_date - Duration::days(1))) ) TODO extra rules
-            // TODO
             .min_by(|x, y| x.scheduled.len().cmp(&y.scheduled.len()));
 
         match thing {
+            // TODO yeah...
             None => println!("No one for {}", sched_date),
             Some(participant) => participant.add_scheduled_date(sched_date),
         }

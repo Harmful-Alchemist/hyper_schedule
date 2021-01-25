@@ -114,6 +114,35 @@ defmodule HyperScheduleWeb.CalendarLiveTest do
       assert scheduled =~ "#{day}\n  \n  <div class=\"text-bold bg-purple\">#{name}</div>"
     end
 
-    #    TODO rescheduling with added and removed date!
+    #    Unclick and reschedule
+    formatted =
+      first_day_of_month |>  Timex.format!("%Y-%m-%d", :strftime)
+
+    render_click(view, "pick-date", date: formatted)
+    scheduled = render_click(view, "schedule")
+    day1 = first_day_of_month |> Timex.format!("%d", :strftime)
+    assert scheduled =~ "#{day1}\n  \n</td>"
+
+    for i <- 1..5 do
+      name = Enum.at(names, rem(i, length(names)))
+      day = first_day_of_month |> Timex.shift(days: i) |> Timex.format!("%d", :strftime)
+      assert scheduled =~ "#{day}\n  \n  <div class=\"text-bold bg-purple\">#{name}</div>"
+    end
+
+#    Schedule extra
+    formatted6 =
+      first_day_of_month |> Timex.shift(days: 6) |>  Timex.format!("%Y-%m-%d", :strftime)
+
+    render_click(view, "pick-date", date: formatted6)
+    scheduled = render_click(view, "schedule")
+
+    assert scheduled =~ "#{day1}\n  \n</td>"
+
+    for i <- 1..6 do
+      name = Enum.at(names, rem(i, length(names)))
+      day = first_day_of_month |> Timex.shift(days: i) |> Timex.format!("%d", :strftime)
+      assert scheduled =~ "#{day}\n  \n  <div class=\"text-bold bg-purple\">#{name}</div>"
+    end
+
   end
 end
