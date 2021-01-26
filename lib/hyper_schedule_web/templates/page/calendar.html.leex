@@ -6,6 +6,7 @@
   <div>
     <a href="#" phx-click="prev-month" class="inline-block text-sm bg-white p-2 rounded shadow text-gray-600 border border-gray-200">&laquo; Prev</a>
     <a href="#" phx-click="next-month" class="inline-block text-sm bg-white p-2 rounded shadow text-gray-600 border border-gray-200">&raquo; Next</a>
+    <a href="#" phx-click="toggle-weekend" class="inline-block text-sm bg-purple p-2 rounded shadow text-gray-600 border border-gray-200"><%= if @toggle_weekend do %>Schedule weekends<% else %>Don't schedule weekends<% end %></a>
   </div>
 </div>
 <table class="w-full mt-4 border border-gray-200 rounded-lg shadow-lg">
@@ -22,7 +23,7 @@
     <%= for week <- @week_rows do %>
     <tr>
         <%= for day <- week do %>
-        <%= live_component @socket, HyperSchedule.CalendarDayComponent, day: day, selected_dates: @selected_dates, current_date: @current_date, participants: @participants %>
+        <%= live_component @socket, HyperSchedule.CalendarDayComponent, day: day, selected_dates: @selected_dates, current_date: @current_date, participants: @participants, toggle_weekend: @toggle_weekend %>
   <% end %>
     </tr>
     <% end %>
@@ -42,6 +43,6 @@
   <%= submit "Add" %>
 </form>
 <%= if length(@participants) > 0 do %>
-<div phx-click="schedule">Schedule!</div>
+    <a href="#" phx-click="schedule" class="inline-block text-sm bg-white p-2 rounded shadow text-gray-600 border border-gray-200">Hyper Schedule!</a>
 <% end %>
 </div>

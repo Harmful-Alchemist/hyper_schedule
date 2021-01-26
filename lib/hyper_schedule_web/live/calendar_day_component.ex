@@ -4,6 +4,7 @@ defmodule HyperSchedule.CalendarDayComponent do
 
   @impl true
   def render(assigns) do
+    #    TODO look at these assigns and maybe the changed?
     assigns = Map.put(assigns, :day_class, day_class(assigns))
 
     scheduled_on_day =
@@ -26,6 +27,12 @@ defmodule HyperSchedule.CalendarDayComponent do
 
   defp day_class(assigns) do
     cond do
+      #      today?(assigns) && weekend?(assigns) ->
+      #        "text-xs p-2 text-gray-600 border border-gray-200 bg-green-100 cursor-not-allowed"
+
+      weekend?(assigns) ->
+        "text-xs p-2 text-gray-600 border border-gray-200 bg-red-100 cursor-not-allowed"
+
       today?(assigns) && selected_date?(assigns) ->
         "text-xs p-2 text-gray-600 border border-gray-200 bg-green-400 hover:bg-green-500 cursor-pointer"
 
@@ -56,5 +63,9 @@ defmodule HyperSchedule.CalendarDayComponent do
 
   defp other_month?(assigns) do
     Map.take(assigns.day, [:year, :month]) != Map.take(assigns.current_date, [:year, :month])
+  end
+
+  defp weekend?(assigns) do
+    assigns.toggle_weekend && (Timex.weekday(assigns.day) == 6 || Timex.weekday(assigns.day) == 7)
   end
 end

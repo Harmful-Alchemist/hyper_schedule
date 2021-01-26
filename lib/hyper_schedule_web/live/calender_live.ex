@@ -16,6 +16,7 @@ defmodule HyperScheduleWeb.CalendarLive do
       week_rows: week_rows(current_date),
       selected_dates: [],
       participants: [],
+      toggle_weekend: true,
       changeset: Participants.participant()
     ]
 
@@ -25,6 +26,35 @@ defmodule HyperScheduleWeb.CalendarLive do
   @impl true
   def render(assigns) do
     HyperScheduleWeb.PageView.render("calendar.html", assigns)
+  end
+
+  @impl true
+  def handle_event("toggle-weekend", _, socket) do
+    selected_dates =
+      socket.assigns.selected_dates
+      |> Enum.filter(fn date ->
+        !(Timex.weekday(date) == 6 || Timex.weekday(date) == 7)
+      end)
+
+    participants =
+      socket.assigns.participants
+      |> Enum.map(fn participant ->
+        participant
+        |> Map.update!(:scheduled, fn scheduled ->
+          scheduled
+          |> Enum.filter(fn date ->
+            !(Timex.weekday(date) == 6 || Timex.weekday(date) == 7)
+          end)
+        end)
+      end)
+
+    assigns = [
+      toggle_weekend: !socket.assigns.toggle_weekend,
+      selected_dates: selected_dates,
+      participants: participants
+    ]
+
+    {:noreply, assign(socket, assigns)}
   end
 
   @impl true
@@ -52,7 +82,9 @@ defmodule HyperScheduleWeb.CalendarLive do
       socket.assigns.participants
       |> Enum.map(fn participant ->
         Map.update!(participant, :scheduled, fn scheduled ->
-          Enum.filter(scheduled, fn date -> Enum.member?(socket.assigns.selected_dates, Timex.shift(date, seconds: -1)) end)
+          Enum.filter(scheduled, fn date ->
+            Enum.member?(socket.assigns.selected_dates, Timex.shift(date, seconds: -1))
+          end)
         end)
       end)
       |> Participants.naive_to_timestamps()
