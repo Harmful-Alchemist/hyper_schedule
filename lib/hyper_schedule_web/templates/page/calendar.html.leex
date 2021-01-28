@@ -1,48 +1,66 @@
 <div class="p-10">
-<div class="flex items-baseline justify-between">
-  <h3 class="ml-4 text-gray-600 text-lg">
-    <%= Timex.format!(@current_date, "%B %Y", :strftime) %>
-  </h3>
-  <div>
-    <a href="#" phx-click="prev-month" class="inline-block text-sm bg-white p-2 rounded shadow text-gray-600 border border-gray-200">&laquo; Prev</a>
-    <a href="#" phx-click="next-month" class="inline-block text-sm bg-white p-2 rounded shadow text-gray-600 border border-gray-200">&raquo; Next</a>
-    <a href="#" phx-click="toggle-weekend" class="inline-block text-sm bg-purple p-2 rounded shadow text-gray-600 border border-gray-200"><%= if @toggle_weekend do %>Schedule weekends<% else %>Don't schedule weekends<% end %></a>
-  </div>
-</div>
-<table class="w-full mt-4 border border-gray-200 rounded-lg shadow-lg">
-    <thead>
-    <tr>
-        <%= for day_name <- @day_names do %>
-        <th class="text-xs p-2 text-gray-600 border border-gray-200">
-            <%= day_name %>
-        </th>
-        <% end %>
-    </tr>
-    </thead>
-    <tbody>
-    <%= for week <- @week_rows do %>
-    <tr>
-        <%= for day <- week do %>
-        <%= live_component @socket, HyperSchedule.CalendarDayComponent, day: day, selected_dates: @selected_dates, current_date: @current_date, participants: @participants, toggle_weekend: @toggle_weekend %>
+    <div class="flex items-baseline justify-between">
+        <h3 class="ml-4 text-gray-600 text-lg">
+            <%= Timex.format!(@current_date, "%B %Y", :strftime) %>
+        </h3>
+        <form phx-submit="select-date-range">
+            <label for="start-date">Start date schedule:</label>
+            <input type="date" id="start-date" name="start-date" value="<%= @start_date %>"/>
+            <label for="end-date">End date schedule:</label>
+            <input type="date" id="end-date" name="end-date" value="<%= @end_date %>"/>
+            <button class="inline-block text-sm bg-white p-2 rounded shadow text-gray-600 border border-gray-200"
+            >Select for range</button>
+        </form>
+        <div>
+            <button phx-click="prev-month"
+                    class="inline-block text-sm bg-white p-2 rounded shadow text-gray-600 border border-gray-200">
+                &laquo; Prev
+            </button>
+            <button phx-click="next-month"
+                    class="inline-block text-sm bg-white p-2 rounded shadow text-gray-600 border border-gray-200">
+                &raquo; Next
+            </button>
+            <button phx-click="toggle-weekend"
+                    class="inline-block text-sm bg-purple p-2 rounded shadow text-gray-600 border border-gray-200"><%= if @toggle_weekend do %>Schedule
+                weekends<% else %>Don't schedule weekends<% end %></button>
+        </div>
+    </div>
+    <table class="w-full mt-4 border border-gray-200 rounded-lg shadow-lg">
+        <thead>
+        <tr>
+            <%= for day_name <- @day_names do %>
+            <th class="text-xs p-2 text-gray-600 border border-gray-200">
+                <%= day_name %>
+            </th>
+            <% end %>
+        </tr>
+        </thead>
+        <tbody>
+        <%= for week <- @week_rows do %>
+        <tr>
+            <%= for day <- week do %>
+            <%= live_component @socket, HyperSchedule.CalendarDayComponent, day: day, selected_dates: @selected_dates, current_date: @current_date, participants: @participants, toggle_weekend: @toggle_weekend %>
   <% end %>
-    </tr>
+        </tr>
+        <% end %>
+        </tbody>
+    </table>
+    <%= for participant <- @participants |> Enum.reverse() do %>
+    <div>
+        <%= participant.name %>
+    </div>
     <% end %>
-    </tbody>
-</table>
-<%= for participant <- @participants do %>
-<div>
-    <%= participant.name %>
- <! -- TODO add remove and select to add to blocked! -->
-</div>
-<% end %>
-<%= f = form_for @changeset, "#", [phx_submit: :add_participant, class: "p-10", id: "participant-form"] %>
-  <%= label f, :name %>
-  <%= text_input f, :name %>
-  <%= error_tag f, :name %>
+    <%= f = form_for @changeset, "#", [phx_submit: :add_participant, class: "p-10", id: "participant-form"] %>
+    <%= label f, :name %>
+    <%= text_input f, :name %>
+    <%= error_tag f, :name %>
 
-  <%= submit "Add" %>
-</form>
-<%= if length(@participants) > 0 do %>
-    <a href="#" phx-click="schedule" class="inline-block text-sm bg-white p-2 rounded shadow text-gray-600 border border-gray-200">Hyper Schedule!</a>
-<% end %>
+    <%= submit "Add" %>
+    </form>
+    <%= if length(@participants) > 0 do %>
+    <button phx-click="schedule"
+            class="inline-block text-sm bg-white p-2 rounded shadow text-gray-600 border border-gray-200">Hyper
+        Schedule!
+    </button>
+    <% end %>
 </div>

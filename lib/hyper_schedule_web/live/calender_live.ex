@@ -17,15 +17,47 @@ defmodule HyperScheduleWeb.CalendarLive do
       selected_dates: [],
       participants: [],
       toggle_weekend: true,
-      changeset: Participants.participant()
+      changeset: Participants.participant(),
+      start_date: "mm/dd/yyyy",
+      end_date: "mm/dd/yyyy"
     ]
 
     {:ok, assign(socket, assigns)}
   end
-
+# TODO test range, limit 2036 time stamp overflow?, unselect all and unschedule all
   @impl true
   def render(assigns) do
     HyperScheduleWeb.PageView.render("calendar.html", assigns)
+  end
+
+  @impl true
+  def handle_event(
+        "select-date-range",
+        %{"end-date" => end_date, "start-date" => start_date},
+        socket
+      ) do
+    case {start_date, end_date} do
+      {"", _} ->
+        {:noreply, assign(socket, [end_date: end_date])}
+
+      {_, ""} ->
+        {:noreply, assign(socket, [start_date: start_date])}
+
+      {_, _} ->
+        assigns = [
+          selected_dates:
+            select_date_range(
+              socket.assigns.selected_dates,
+              socket.assigns.toggle_weekend,
+              start_date,
+              end_date
+            ),
+            start_date: start_date,
+            end_date: end_date
+        ]
+
+        {:noreply, assign(socket, assigns)}
+    end
   end
 
   @impl true
@@ -146,5 +178,30 @@ defmodule HyperScheduleWeb.CalendarLive do
     Interval.new(from: first, until: last)
     |> Enum.map(& &1)
     |> Enum.chunk_every(7)
+  end
+
+  defp select_date_range(selected_dates, toggle_weekend, start_date, end_date) do
+    #    TODO parse errors and start > end will be error now
+    {:ok, parsed_start} = Timex.parse(start_date, "{YYYY}-{0M}-{0D}")
+    {:ok, parsed_end} = Timex.parse(end_date, "{YYYY}-{0M}-{0D}")
+
+    new_dates =
+      Timex.Interval.new(from: parsed_start, until: parsed_end, right_open: false)
+      |> Interval.with_step(days: 1)
+      |> Enum.to_list()
+
+    new_dates =
+      case toggle_weekend do
+        true ->
+          new_dates
+          |> Enum.filter(fn date ->
+            !(Timex.weekday(date) == 6 || Timex.weekday(date) == 7)
+          end)
+
+        false ->
+          new_dates
+      end
+
+    new_dates |> Enum.concat(selected_dates) |> Enum.dedup()
   end
 end
