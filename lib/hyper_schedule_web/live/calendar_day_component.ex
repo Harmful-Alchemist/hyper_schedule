@@ -15,11 +15,23 @@ defmodule HyperSchedule.CalendarDayComponent do
         end)
       end)
 
+    blocked_on_day =
+      assigns.participants
+      |> Enum.filter(fn participant ->
+        Enum.any?(participant.blocked, fn x ->
+          Map.take(assigns.day, [:year, :month, :day]) == Map.take(x, [:year, :month, :day])
+        end)
+      end)
+      |> Enum.map(& &1.name)
+
     ~L"""
     <td phx-click="pick-date" phx-value-date="<%= Timex.format!(@day, "%Y-%m-%d", :strftime) %>" class="<%= @day_class %>">
       <%= Timex.format!(@day, "%d", :strftime) %>
       <%= if !is_nil(scheduled_on_day) do %>
       <div class="text-bold bg-purple"><%= scheduled_on_day.name %></div>
+      <% end %>
+            <%= for blocked <- blocked_on_day do %>
+      <div class="text-bold bg-purple"><s><%= blocked %></s></div>
       <% end %>
     </td>
     """

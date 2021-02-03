@@ -24,7 +24,8 @@ defmodule HyperScheduleWeb.CalendarLive do
 
     {:ok, assign(socket, assigns)}
   end
-# TODO test range, limit 2036 time stamp overflow?, unselect all and unschedule all
+
+  # TODO test range, limit 2036 time stamp overflow?, unselect all and unschedule all <-
   @impl true
   def render(assigns) do
     HyperScheduleWeb.PageView.render("calendar.html", assigns)
@@ -38,10 +39,10 @@ defmodule HyperScheduleWeb.CalendarLive do
       ) do
     case {start_date, end_date} do
       {"", _} ->
-        {:noreply, assign(socket, [end_date: end_date])}
+        {:noreply, assign(socket, end_date: end_date)}
 
       {_, ""} ->
-        {:noreply, assign(socket, [start_date: start_date])}
+        {:noreply, assign(socket, start_date: start_date)}
 
       {_, _} ->
         assigns = [
@@ -52,12 +53,47 @@ defmodule HyperScheduleWeb.CalendarLive do
               start_date,
               end_date
             ),
-            start_date: start_date,
-            end_date: end_date
+          start_date: start_date,
+          end_date: end_date
         ]
 
         {:noreply, assign(socket, assigns)}
     end
+  end
+
+  @impl true
+  def handle_event("blocked-dates", %{"blocked-date" => blocked_date, "name" => name}, socket) do
+    #    TODO removing displaying in calendar! Adding multiple dates! Don't lose input once done and
+    # tests and repeating dates! <-
+
+    participants =
+      socket.assigns.participants
+      |> Enum.map(fn participant ->
+        case blocked_date != "" and participant.name == name do
+          true ->
+            participant
+            |> Map.update!(:blocked, &[Timex.parse!(blocked_date, "{YYYY}-{0M}-{D}") | &1])
+
+          _ ->
+            participant
+        end
+      end)
+
+    assigns = [participants: participants]
+    {:noreply, assign(socket, assigns)}
+  end
+
+  @impl true
+  def handle_event("remove-participant", %{"name" => name}, socket) do
+    participants =
+      socket.assigns.participants
+      |> Enum.filter(fn %{name: filter_name} -> filter_name != name end)
+
+    assigns = [
+      participants: participants
+    ]
+
+    {:noreply, assign(socket, assigns)}
   end
 
   @impl true
@@ -133,7 +169,7 @@ defmodule HyperScheduleWeb.CalendarLive do
   @impl true
   def handle_event("add_participant", %{"participant" => params}, socket) do
     assigns = [participants: [Participants.struct(params) | socket.assigns.participants]]
-
+    # TODO same name twice :)
     {:noreply, assign(socket, assigns)}
   end
 
