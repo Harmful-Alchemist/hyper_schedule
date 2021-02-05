@@ -1,10 +1,10 @@
 use rustler::{Encoder, Env, Error, Term, NifStruct};
-use chrono::{NaiveDate, NaiveDateTime, NaiveTime};
+use chrono::{NaiveDate, NaiveDateTime, NaiveTime, Duration};
 
 mod atoms {
     rustler::rustler_atoms! {
         atom ok;
-        //atom error;
+        atom error;
         //atom __true__ = "true";
         //atom __false__ = "false";
     }
@@ -13,16 +13,48 @@ mod atoms {
 rustler::rustler_export_nifs! {
     "Elixir.HyperSchedule.Scheduling",
     [
-        ("schedule", 2, schedule)
+        ("schedule", 2, schedule),
+        ("shift_day", 2, shift),
+        ("same_date?", 2, same_date)
     ],
     None
+}
+
+const FORMAT: &str = "%Y-%m-%d";
+
+fn same_date<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
+    let date1: &str = args[0].decode()?;
+    let date2: &str = args[1].decode()?;
+
+    match NaiveDate::parse_from_str(date1, FORMAT) {
+        Ok(frm1) => {
+            match NaiveDate::parse_from_str(date2, FORMAT) {
+                Ok(frm2) => Ok((atoms::ok(), frm1 == frm2).encode(env)),
+                Err(e) => Ok((atoms::error(), e.to_string()).encode(env))
+            }
+        }
+        Err(e) => Ok((atoms::error(), e.to_string()).encode(env))
+    }
+}
+
+fn shift<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
+    let date: &str = args[0].decode()?;
+    let days: i64 = args[1].decode()?;
+
+    match NaiveDate::parse_from_str(date, FORMAT) {
+        Ok(parsed) => {
+            let new = parsed + Duration::days(days);
+            Ok((atoms::ok(), new.format(FORMAT).to_string()).encode(env))
+        }
+        Err(e) => Ok((atoms::error(), e.to_string()).encode(env))
+    }
 }
 
 fn schedule<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
     let participants: Vec<Participant> = args[0].decode()?;
     let slots: Vec<i64> = args[1].decode()?;
 
-    let result = schedule_rs(participants,slots);
+    let result = schedule_rs(participants, slots);
 
     Ok((atoms::ok(), result).encode(env))
 }
@@ -46,8 +78,8 @@ pub fn schedule_rs(mut participants: Vec<Participant>, slots: Vec<i64>) -> Vec<P
     let pre_scheduled: Vec<NaiveDate> = participants.iter()
         .flat_map(
             |participant| participant.scheduled.clone().iter()
-            .map(|stamp| NaiveDateTime::from_timestamp(*stamp, 0).date())
-            .collect::<Vec<NaiveDate>>()
+                .map(|stamp| NaiveDateTime::from_timestamp(*stamp, 0).date())
+                .collect::<Vec<NaiveDate>>()
         )
         .collect();
 

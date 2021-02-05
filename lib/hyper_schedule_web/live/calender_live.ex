@@ -25,7 +25,9 @@ defmodule HyperScheduleWeb.CalendarLive do
     {:ok, assign(socket, assigns)}
   end
 
-  # TODO test range, limit 2036 time stamp overflow?, unselect all and unschedule all <-
+  # TODO test range, limit 2036 time stamp overflow?, unselect all and unschedule all
+  #   TODO all timex functionality to rust? Use Chrono.... Keep just strings in elixir
+  # TODO for blocked make list of maps %{date: "some-date", repeats: no|weekly|monthly}? Then generate per range (e.g. per month for display)
   @impl true
   def render(assigns) do
     HyperScheduleWeb.PageView.render("calendar.html", assigns)
@@ -64,7 +66,7 @@ defmodule HyperScheduleWeb.CalendarLive do
   @impl true
   def handle_event("blocked-dates", %{"blocked-date" => blocked_date, "name" => name}, socket) do
     #    TODO removing displaying in calendar! Adding multiple dates! Don't lose input once done and
-    # tests and repeating dates! <-
+    # tests and repeating dates!
 
     participants =
       socket.assigns.participants

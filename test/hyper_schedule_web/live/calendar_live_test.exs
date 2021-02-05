@@ -83,11 +83,11 @@ defmodule HyperScheduleWeb.CalendarLiveTest do
 
     assert view
            |> form("form#participant-form", participant: %{name: name1})
-           |> render_submit =~ "<div>\n#{name1}"
+           |> render_submit =~ "<label for=\"name\">name</label><input type=\"text\" value=\"#{name1}\" name=\"name\"/>"
 
     assert view
            |> form("form#participant-form", participant: %{name: name2})
-           |> render_submit =~ "<div>\n#{name2}"
+           |> render_submit =~ "<label for=\"name\">name</label><input type=\"text\" value=\"#{name2}\" name=\"name\"/>"
   end
 
   test "can schedule", %{conn: conn} do
@@ -124,7 +124,7 @@ defmodule HyperScheduleWeb.CalendarLiveTest do
     render_click(view, "pick-date", date: formatted)
     scheduled = render_click(view, "schedule")
     day1 = first_day_of_month |> Timex.format!("%d", :strftime)
-    assert scheduled =~ "#{day1}\n  \n</td>"
+    assert scheduled =~ "#{day1}\n  \n        \n</td>"
 
     for i <- 1..5 do
       name = Enum.at(names, rem(i, length(names)))
@@ -139,7 +139,7 @@ defmodule HyperScheduleWeb.CalendarLiveTest do
     render_click(view, "pick-date", date: formatted6)
     scheduled = render_click(view, "schedule")
 
-    assert scheduled =~ "#{day1}\n  \n</td>"
+    assert scheduled =~ "#{day1}\n  \n        \n</td>"
 
     for i <- 1..6 do
       name = Enum.at(names, rem(i, length(names)))
@@ -187,8 +187,8 @@ defmodule HyperScheduleWeb.CalendarLiveTest do
     end
 
     toggled_back = render_click(view, "toggle-weekend")
-    assert toggled_back =~ "#{Timex.format!(first_saturday, "%d", :strftime)}\n  \n</td>"
-    assert toggled_back =~ "#{Timex.format!(first_sunday, "%d", :strftime)}\n  \n</td>"
+    assert toggled_back =~ "#{Timex.format!(first_saturday, "%d", :strftime)}\n  \n        \n</td>"
+    assert toggled_back =~ "#{Timex.format!(first_sunday, "%d", :strftime)}\n  \n        \n</td>"
 
     assert toggled_back =~
              "#{Timex.format!(next_mon, "%d", :strftime)}\n  \n  <div class=\"text-bold bg-purple\">#{
