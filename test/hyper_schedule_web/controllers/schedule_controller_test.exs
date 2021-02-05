@@ -5,30 +5,30 @@ defmodule HyperScheduleWeb.ScheduleControllerTest do
     conn =
       post(conn, "/api/v1/schedule", %{
         "dates" => [
-          "2020-12-25T23:50:07Z",
-          "2020-12-26T23:50:07Z",
-          "2020-12-27T23:50:07Z",
-          "2020-12-28T23:50:07Z"
+          "2020-12-25",
+          "2020-12-26",
+          "2020-12-27",
+          "2020-12-28"
         ],
         "participants" => [
           %{
             "name" => "Hiya",
             "blocked" => [
-              "2020-12-26T23:50:07Z"
+              "2020-12-26"
             ],
             "scheduled" => []
           },
           %{
             "name" => "Hiya2",
             "blocked" => [
-              "2020-12-27T23:50:07Z"
+              "2020-12-27"
             ],
             "scheduled" => []
           },
           %{
             "name" => "Hiya3",
             "blocked" => [
-              "2020-12-28T23:50:07Z"
+              "2020-12-28"
             ],
             "scheduled" => []
           }
@@ -37,19 +37,19 @@ defmodule HyperScheduleWeb.ScheduleControllerTest do
 
     assert json_response(conn, 200) == [
              %{
-               "blocked" => ["2020-12-26T23:50:07Z"],
+               "blocked" => ["2020-12-26"],
                "name" => "Hiya",
-               "scheduled" => ["2020-12-25T00:00:01Z", "2020-12-28T00:00:01Z"]
+               "scheduled" => ["2020-12-25", "2020-12-28"]
              },
              %{
-               "blocked" => ["2020-12-27T23:50:07Z"],
+               "blocked" => ["2020-12-27"],
                "name" => "Hiya2",
-               "scheduled" => ["2020-12-26T00:00:01Z"]
+               "scheduled" => ["2020-12-26"]
              },
              %{
-               "blocked" => ["2020-12-28T23:50:07Z"],
+               "blocked" => ["2020-12-28"],
                "name" => "Hiya3",
-               "scheduled" => ["2020-12-27T00:00:01Z"]
+               "scheduled" => ["2020-12-27"]
              }
            ]
   end

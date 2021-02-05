@@ -50,9 +50,14 @@ defmodule HyperSchedule.ScheduleTest do
   test "Can generate a schedule", %{p1: p1, p2: p2, p3: p3, p4: p4} do
     now = DateTime.utc_now()
     participants = [p1, p2, p3, p4]
-    date_times = generate_date_time_series(DateTime.add(now, -11 * @day, :second), now)
-    dates = date_times |> Enum.map(&DateTime.to_unix/1)
-    {:ok, schedule} = schedule(participants, dates)
+
+    date_times =
+      generate_date_time_series(DateTime.add(now, -11 * @day, :second), now)
+      |> Enum.map(&DateTime.to_naive/1)
+      |> Enum.map(&NaiveDateTime.to_date/1)
+
+    dates = date_times |> Enum.map(&Timex.format!(&1, "%Y-%m-%d", :strftime))
+    {:ok, schedule} = schedule!(participants, dates)
 
     # All names in the schedule
     assert Enum.map(schedule, & &1.name) == Enum.map(participants, & &1.name)
@@ -65,9 +70,9 @@ defmodule HyperSchedule.ScheduleTest do
 
     # We lose the time info, for now and see all dates we gave to schedule are scheduled, if no blocked dates interfere
     assert Enum.flat_map(schedule, & &1.scheduled)
-           |> Enum.map(&DateTime.from_unix!/1)
-           |> Enum.map(&DateTime.to_date/1)
-           |> Enum.sort() == date_times |> Enum.map(&DateTime.to_date/1) |> Enum.sort()
+           |> Enum.map(&Timex.parse!(&1, "{YYYY}-{0M}-{0D}"))
+           |> Enum.map(&NaiveDateTime.to_date/1)
+           |> Enum.sort() == date_times |> Enum.sort()
 
     # 12 over four should be 3 each
     assert Enum.map(schedule, &Enum.count(&1.scheduled)) == [3, 3, 3, 3]
@@ -75,22 +80,20 @@ defmodule HyperSchedule.ScheduleTest do
     for participant <- schedule do
       scheduled_dates =
         participant.scheduled
-        |> Enum.map(&DateTime.from_unix!/1)
-        |> Enum.map(&DateTime.to_date/1)
+        |> Enum.map(&Timex.parse!(&1, "{YYYY}-{0M}-{0D}"))
+        |> Enum.map(&NaiveDateTime.to_date/1)
 
       for blocked <- participant.blocked do
-        blocked_date = DateTime.from_unix!(blocked) |> DateTime.to_date()
-
         refute scheduled_dates
-               |> Enum.member?(blocked_date)
+               |> Enum.member?(blocked)
       end
     end
 
     # Should be no overlapping dates
     scheduled_dates =
       Enum.flat_map(schedule, & &1.scheduled)
-      |> Enum.map(&DateTime.from_unix!/1)
-      |> Enum.map(&DateTime.to_date/1)
+      |> Enum.map(&Timex.parse!(&1, "{YYYY}-{0M}-{0D}"))
+      |> Enum.map(&NaiveDateTime.to_date/1)
 
     assert length(scheduled_dates) == length(Enum.dedup(scheduled_dates))
   end
@@ -98,8 +101,8 @@ defmodule HyperSchedule.ScheduleTest do
   defp create_participant(name, blocked, scheduled) do
     %HyperSchedule.Participant{
       name: name,
-      scheduled: scheduled |> Enum.map(&DateTime.to_unix/1),
-      blocked: blocked |> Enum.map(&DateTime.to_unix/1)
+      scheduled: scheduled |> Enum.map(&Timex.format!(&1, "%Y-%m-%d", :strftime)),
+      blocked: blocked |> Enum.map(&Timex.format!(&1, "%Y-%m-%d", :strftime))
     }
   end
 

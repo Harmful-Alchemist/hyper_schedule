@@ -6,12 +6,13 @@ defmodule HyperSchedule.Participant do
 
   embedded_schema do
     field :name, :string, default: ""
-    field :scheduled, {:array, :integer}, default: []
-    field :blocked, {:array, :integer}, default: []
+    field :scheduled, {:array, :string}, default: []
+    field :blocked, {:array, :string}, default: []
   end
 
   def changeset(participant, params \\ %{}) do
     participant
+    #    TODO validate date format?
     |> cast(params, [:name, :scheduled, :blocked])
   end
 end

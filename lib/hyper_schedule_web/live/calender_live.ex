@@ -11,6 +11,7 @@ defmodule HyperScheduleWeb.CalendarLive do
 
     assigns = [
       conn: socket,
+      #    TODO still a date replace everywhere with string!
       current_date: current_date,
       day_names: day_names(@week_start_at),
       week_rows: week_rows(current_date),
@@ -25,8 +26,7 @@ defmodule HyperScheduleWeb.CalendarLive do
     {:ok, assign(socket, assigns)}
   end
 
-  # TODO test range, limit 2036 time stamp overflow?, unselect all and unschedule all
-  #   TODO all timex functionality to rust? Use Chrono.... Keep just strings in elixir
+  # TODO  unselect all and unschedule all
   # TODO for blocked make list of maps %{date: "some-date", repeats: no|weekly|monthly}? Then generate per range (e.g. per month for display)
   @impl true
   def render(assigns) do
@@ -65,8 +65,7 @@ defmodule HyperScheduleWeb.CalendarLive do
 
   @impl true
   def handle_event("blocked-dates", %{"blocked-date" => blocked_date, "name" => name}, socket) do
-    #    TODO removing displaying in calendar! Adding multiple dates! Don't lose input once done and
-    # tests and repeating dates!
+    #    TODO removing displaying in calendar! Adding multiple dates! Don't lose input once done and tests and repeating dates!
 
     participants =
       socket.assigns.participants
@@ -74,7 +73,7 @@ defmodule HyperScheduleWeb.CalendarLive do
         case blocked_date != "" and participant.name == name do
           true ->
             participant
-            |> Map.update!(:blocked, &[Timex.parse!(blocked_date, "{YYYY}-{0M}-{D}") | &1])
+            |> Map.update!(:blocked, &[blocked_date | &1])
 
           _ ->
             participant
@@ -102,9 +101,7 @@ defmodule HyperScheduleWeb.CalendarLive do
   def handle_event("toggle-weekend", _, socket) do
     selected_dates =
       socket.assigns.selected_dates
-      |> Enum.filter(fn date ->
-        !(Timex.weekday(date) == 6 || Timex.weekday(date) == 7)
-      end)
+      |> Enum.filter(&(!weekend?(&1)))
 
     participants =
       socket.assigns.participants
@@ -112,9 +109,7 @@ defmodule HyperScheduleWeb.CalendarLive do
         participant
         |> Map.update!(:scheduled, fn scheduled ->
           scheduled
-          |> Enum.filter(fn date ->
-            !(Timex.weekday(date) == 6 || Timex.weekday(date) == 7)
-          end)
+          |> Enum.filter(&(!weekend?(&1)))
         end)
       end)
 
@@ -130,12 +125,11 @@ defmodule HyperScheduleWeb.CalendarLive do
   @impl true
   def handle_event("pick-date", %{"date" => date}, socket) do
     selected_dates = socket.assigns.selected_dates
-    picked_date = Timex.parse!(date, "{YYYY}-{0M}-{D}") |> NaiveDateTime.add(0, :millisecond)
 
     assigns =
-      case Enum.member?(selected_dates, picked_date) do
-        true -> [selected_dates: List.delete(selected_dates, picked_date)]
-        false -> [selected_dates: [picked_date | selected_dates]]
+      case Enum.member?(selected_dates, date) do
+        true -> [selected_dates: List.delete(selected_dates, date)]
+        false -> [selected_dates: [date | selected_dates]]
       end
 
     {:noreply, assign(socket, assigns)}
@@ -143,26 +137,20 @@ defmodule HyperScheduleWeb.CalendarLive do
 
   @impl true
   def handle_event("schedule", _, socket) do
-    slots =
-      socket.assigns.selected_dates
-      |> Enum.map(&DateTime.from_naive!(&1, "Etc/UTC"))
-      |> Enum.map(&DateTime.to_unix/1)
+    slots = socket.assigns.selected_dates
 
     timestamped_participants =
       socket.assigns.participants
       |> Enum.map(fn participant ->
         Map.update!(participant, :scheduled, fn scheduled ->
           Enum.filter(scheduled, fn date ->
-            Enum.member?(socket.assigns.selected_dates, Timex.shift(date, seconds: -1))
+            Enum.member?(socket.assigns.selected_dates, date)
           end)
         end)
       end)
-      |> Participants.naive_to_timestamps()
 
     # TODO error handling
-    {:ok, schedule} = Scheduling.schedule(timestamped_participants, slots)
-
-    schedule = Participants.timestamps_to_naive(schedule)
+    {:ok, schedule} = Scheduling.schedule!(timestamped_participants, slots)
 
     assigns = [participants: schedule]
     {:noreply, assign(socket, assigns)}
@@ -177,7 +165,14 @@ defmodule HyperScheduleWeb.CalendarLive do
 
   @impl true
   def handle_event("prev-month", _, socket) do
-    current_date = Timex.shift(socket.assigns.current_date, months: -1)
+    {:ok, current_date} =
+      Scheduling.shift(
+        socket.assigns.current_date |> Timex.format!("%Y-%m-%d", :strftime),
+        -1,
+        :month
+      )
+
+    current_date = current_date |> Timex.parse!("{YYYY}-{0M}-{0D}")
 
     assigns = [
       current_date: current_date,
@@ -189,7 +184,14 @@ defmodule HyperScheduleWeb.CalendarLive do
 
   @impl true
   def handle_event("next-month", _, socket) do
-    current_date = Timex.shift(socket.assigns.current_date, months: 1)
+    {:ok, current_date} =
+      Scheduling.shift(
+        socket.assigns.current_date |> Timex.format!("%Y-%m-%d", :strftime),
+        1,
+        :month
+      )
+
+    current_date = current_date |> Timex.parse!("{YYYY}-{0M}-{0D}")
 
     assigns = [
       current_date: current_date,
@@ -215,6 +217,7 @@ defmodule HyperScheduleWeb.CalendarLive do
 
     Interval.new(from: first, until: last)
     |> Enum.map(& &1)
+    |> Enum.map(&Timex.format!(&1, "%Y-%m-%d", :strftime))
     |> Enum.chunk_every(7)
   end
 
@@ -232,14 +235,21 @@ defmodule HyperScheduleWeb.CalendarLive do
       case toggle_weekend do
         true ->
           new_dates
-          |> Enum.filter(fn date ->
-            !(Timex.weekday(date) == 6 || Timex.weekday(date) == 7)
-          end)
+          |> Enum.filter(!(&weekend?/1))
 
         false ->
           new_dates
       end
 
-    new_dates |> Enum.concat(selected_dates) |> Enum.dedup()
+    new_dates
+    |> Enum.map(&Timex.format!(&1, "%Y-%m-%d", :strftime))
+    |> Enum.concat(selected_dates)
+    |> Enum.dedup()
+  end
+
+  defp weekend?(date) do
+    #    TODO move to scheduling
+    Timex.weekday(Timex.parse!(date, "{YYYY}-{0M}-{0D}")) == 6 ||
+      Timex.weekday(Timex.parse!(date, "{YYYY}-{0M}-{0D}")) == 7
   end
 end

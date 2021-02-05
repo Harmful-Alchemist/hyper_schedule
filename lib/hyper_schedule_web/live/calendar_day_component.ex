@@ -11,22 +11,20 @@ defmodule HyperSchedule.CalendarDayComponent do
       assigns.participants
       |> Enum.find(fn participant ->
         Enum.any?(participant.scheduled, fn x ->
-          Map.take(assigns.day, [:year, :month, :day]) == Map.take(x, [:year, :month, :day])
+          assigns.day == x
         end)
       end)
 
     blocked_on_day =
       assigns.participants
       |> Enum.filter(fn participant ->
-        Enum.any?(participant.blocked, fn x ->
-          Map.take(assigns.day, [:year, :month, :day]) == Map.take(x, [:year, :month, :day])
-        end)
+        Enum.any?(participant.blocked, fn x -> assigns.day == x end)
       end)
       |> Enum.map(& &1.name)
 
     ~L"""
-    <td phx-click="pick-date" phx-value-date="<%= Timex.format!(@day, "%Y-%m-%d", :strftime) %>" class="<%= @day_class %>">
-      <%= Timex.format!(@day, "%d", :strftime) %>
+    <td phx-click="pick-date" phx-value-date="<%= @day %>" class="<%= @day_class %>">
+      <%= String.slice(@day, 8..100) %>
       <%= if !is_nil(scheduled_on_day) do %>
       <div class="text-bold bg-purple"><%= scheduled_on_day.name %></div>
       <% end %>
@@ -66,18 +64,23 @@ defmodule HyperSchedule.CalendarDayComponent do
   end
 
   defp selected_date?(assigns) do
-    Enum.any?(assigns.selected_dates, &(Timex.compare(&1, assigns.day, :day) == 0))
+    Enum.any?(assigns.selected_dates, &(assigns.day == &1))
   end
 
   defp today?(assigns) do
-    Map.take(assigns.day, [:year, :month, :day]) == Map.take(Timex.now(), [:year, :month, :day])
+    assigns.day == Timex.now() |> Timex.format!("%Y-%m-%d", :strftime)
   end
 
   defp other_month?(assigns) do
-    Map.take(assigns.day, [:year, :month]) != Map.take(assigns.current_date, [:year, :month])
+    #    TODO move to Scheduling
+    Map.take(assigns.day |> Timex.parse!("%Y-%m-%d", :strftime), [:year, :month]) !=
+      Map.take(assigns.current_date, [:year, :month])
   end
 
   defp weekend?(assigns) do
-    assigns.toggle_weekend && (Timex.weekday(assigns.day) == 6 || Timex.weekday(assigns.day) == 7)
+    #   TODO Move to scheduling see also weekend? in calendar_live
+    assigns.toggle_weekend &&
+      (Timex.weekday(Timex.parse!(assigns.day, "{YYYY}-{0M}-{0D}")) == 6 ||
+         Timex.weekday(Timex.parse!(assigns.day, "{YYYY}-{0M}-{0D}")) == 7)
   end
 end
