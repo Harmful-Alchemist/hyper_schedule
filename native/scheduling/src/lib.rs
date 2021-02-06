@@ -55,13 +55,22 @@ fn shift_month<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
     let date: &str = args[0].decode()?;
     let months: i32 = args[1].decode()?;
 
+    if months > 1 || months < -1 {
+         return Ok((atoms::error(), "Can't shift more than one month").encode(env));
+    }
+
     match NaiveDate::parse_from_str(date, FORMAT) {
         Ok(parsed) => {
-            let new = match months > 0 {
-                // TODO lol year
-                true => NaiveDate::from_ymd(parsed.year(), parsed.month() + (months as u32), parsed.day()),
-                false => NaiveDate::from_ymd(parsed.year(), parsed.month() - ((months * -1) as u32), parsed.day())
-            };
+                let day = match parsed.day() > 28 {
+                    true => 28,
+                    false => parsed.day()
+                };
+                let (year, month) = match (parsed.year(), parsed.month() as i32 + months > 12, parsed.month() as i32 +months < 1) {
+                    (year, true, false) => (year + 1, 1),
+                    (year, false, true) => (year - 1, 12),
+                    (year, _, _) => (year, parsed.month() as i32 + months)
+                };
+                let new = NaiveDate::from_ymd(year, month as u32, day);
             Ok((atoms::ok(), new.format(FORMAT).to_string()).encode(env))
         }
         Err(e) => Ok((atoms::error(), e.to_string()).encode(env))

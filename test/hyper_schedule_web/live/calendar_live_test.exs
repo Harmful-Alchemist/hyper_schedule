@@ -44,8 +44,8 @@ defmodule HyperScheduleWeb.CalendarLiveTest do
   end
 
   test "can select dates", %{conn: conn} do
-    {:ok, view, html} = live_isolated(conn, HyperScheduleWeb.CalendarLive)
-    render_click(view, "toggle-weekend")
+    {:ok, view, _html} = live_isolated(conn, HyperScheduleWeb.CalendarLive)
+    html = render_click(view, "toggle-weekend")
     assert html =~ "prev-month"
     now = Timex.now()
     now_formatted = Timex.format!(now, "%Y-%m-%d", :strftime)
@@ -155,6 +155,21 @@ defmodule HyperScheduleWeb.CalendarLiveTest do
     first_saturday = Timex.now() |> Timex.beginning_of_month() |> first_saturday()
     first_sunday = Timex.shift(first_saturday, days: 1)
     next_mon = Timex.shift(first_sunday, days: 1)
+
+    avoid_today =
+      Timex.compare(Timex.now(), first_saturday, :day) == 0 ||
+        Timex.compare(Timex.now(), first_sunday, :day) == 0 ||
+        Timex.compare(Timex.now(), next_mon, :day) == 0
+
+    {first_saturday, first_sunday, next_mon} =
+      case avoid_today do
+        true ->
+          {Timex.shift(first_saturday, days: 7), Timex.shift(first_saturday, days: 8),
+           Timex.shift(first_saturday, days: 9)}
+
+        false ->
+          {first_saturday, first_sunday, next_mon}
+      end
 
     {:ok, view, html} = live_isolated(conn, HyperScheduleWeb.CalendarLive)
     sat_formatted = Timex.format!(first_saturday, "%Y-%m-%d", :strftime)
