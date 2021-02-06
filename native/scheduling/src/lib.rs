@@ -16,12 +16,16 @@ rustler::rustler_export_nifs! {
         ("schedule!", 2, schedule),
         ("shift_day", 2, shift),
         ("shift_month", 2, shift_month),
-        ("same_date?", 2, same_date)
+        ("same_date?", 2, same_date),
+        ("weekly", 1, weekly),
+        ("monthly", 1, monthly)
     ],
     None
 }
 
 const FORMAT: &str = "%Y-%m-%d";
+
+const MONTHS31: [u32;7] = [1, 3, 5, 7, 8, 10, 12];
 
 fn same_date<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
     let date1: &str = args[0].decode()?;
@@ -46,6 +50,51 @@ fn shift<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
         Ok(parsed) => {
             let new = parsed + Duration::days(days);
             Ok((atoms::ok(), new.format(FORMAT).to_string()).encode(env))
+        }
+        Err(e) => Ok((atoms::error(), e.to_string()).encode(env))
+    }
+}
+
+fn weekly<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
+    let date: &str = args[0].decode()?;
+
+    match NaiveDate::parse_from_str(date, FORMAT) {
+        Ok(parsed) => {
+            let mut  days= Vec::new();
+            for i in 0..51 {
+                let new = parsed + Duration::days(i * 7);
+                days.push(new.format(FORMAT).to_string())
+            }
+            Ok((atoms::ok(), days).encode(env))
+        }
+        Err(e) => Ok((atoms::error(), e.to_string()).encode(env))
+    }
+}
+
+fn monthly<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
+    let date: &str = args[0].decode()?;
+
+    match NaiveDate::parse_from_str(date, FORMAT) {
+        Ok(parsed) => {
+            let mut days= Vec::new();
+            days.push(String::from(date));
+            for i in 1..11 {
+                let (month, year) = match parsed.month() + i > 12 {
+                    true => (parsed.month() + i -12, parsed.year()+1),
+                    false => (parsed.month() + i, parsed.year())
+                };
+
+                if parsed.day() == 31 && !MONTHS31.contains(&month) {
+                    //do nothing
+                } else if parsed.day() > 28 && month == 2 {
+                    //do nothing
+                } else {
+                    let new= NaiveDate::from_ymd(year, month, parsed.day()).format(FORMAT).to_string();
+                    days.push(new);
+                }
+
+            }
+            Ok((atoms::ok(), days).encode(env))
         }
         Err(e) => Ok((atoms::error(), e.to_string()).encode(env))
     }

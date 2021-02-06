@@ -19,4 +19,8 @@ defmodule HyperSchedule.Scheduling do
   def shift_month(_date, _months), do: :erlang.nif_error(:nif_not_loaded)
 
   def same_date?(_date1, _date2), do: :erlang.nif_error(:nif_not_loaded)
+
+  def weekly(_date), do: :erlang.nif_error(:nif_not_loaded)
+
+  def monthly(_date), do: :erlang.nif_error(:nif_not_loaded)
 end

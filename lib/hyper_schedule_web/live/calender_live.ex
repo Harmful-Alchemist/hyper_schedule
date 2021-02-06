@@ -64,8 +64,18 @@ defmodule HyperScheduleWeb.CalendarLive do
   end
 
   @impl true
-  def handle_event("blocked-dates", %{"blocked-date" => blocked_date, "name" => name}, socket) do
+  def handle_event(
+        "blocked-dates",
+        %{"blocked-date" => blocked_date, "name" => name, "repeats" => repeats},
+        socket
+      ) do
     #    TODO removing displaying in calendar! Adding multiple dates! Don't lose input once done and tests and repeating dates!
+    {:ok, blocked_dates} =
+      case repeats do
+        "never" -> {:ok, [blocked_date]}
+        "weekly" -> Scheduling.weekly(blocked_date)
+        "monthly" -> Scheduling.monthly(blocked_date)
+      end
 
     participants =
       socket.assigns.participants
@@ -73,7 +83,7 @@ defmodule HyperScheduleWeb.CalendarLive do
         case blocked_date != "" and participant.name == name do
           true ->
             participant
-            |> Map.update!(:blocked, &[blocked_date | &1])
+            |> Map.update!(:blocked, &Enum.concat(&1, blocked_dates))
 
           _ ->
             participant

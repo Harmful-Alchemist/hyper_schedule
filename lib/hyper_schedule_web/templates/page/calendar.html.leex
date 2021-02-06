@@ -9,7 +9,8 @@
             <label for="end-date">End date schedule:</label>
             <input type="date" id="end-date" name="end-date" value="<%= @end_date %>"/>
             <button class="inline-block text-sm bg-white p-2 rounded shadow text-gray-600 border border-gray-200"
-            >Select for range</button>
+            >Select for range
+            </button>
         </form>
         <div>
             <button phx-click="prev-month"
@@ -45,27 +46,32 @@
         <% end %>
         </tbody>
     </table>
+    <div class="p-10 space-y-4">
     <%= for participant <- @participants |> Enum.reverse() do %>
-    <div>
-       <form phx-submit="blocked-dates">
+    <div class="bg-purple-100 rounded-xl flex items-baseline justify-between p-5">
+        <form phx-submit="blocked-dates">
             <label for="name">name</label>
-            <input type="text" value="<%= participant.name %>" name="name"> <!-- TODO should be disabled, but still get the value -->
+            <input type="text" value="<%= participant.name %>" name="name"><% #<!-- TODO should be disabled, but still get the value --> %>
             <label for="blocked-date">Blocked on:</label>
-            <%= for blocked <- participant.blocked do %>
-            <input type="date" name="TODO" value="<%= blocked %>"/>
-            <% end %>
             <input type="date" name="blocked-date"/>
-             <%= submit "Add blocked dates" %>
+            <label for="repeats">Repeats:</label>
+            <select id="repeats" name="repeats">
+                <option value="never">never</option>
+                <option value="weekly">weekly for one year</option>
+                <option value="monthly">monthly by date in month for one year</option>
+            </select></select>
+            <%= submit "Add blocked date(s)", class: "inline-block text-sm bg-white p-2 rounded shadow text-gray-600 border border-gray-200" %>
         </form>
-        <button phx-click="remove-participant" phx-value-name="<%= participant.name %>">Remove</button>
+        <button phx-click="remove-participant" phx-value-name="<%= participant.name %>" class="inline-block text-sm bg-white p-2 rounded shadow text-red-600 border border-gray-200">Remove</button>
     </div>
     <% end %>
+    <div>
     <%= f = form_for @changeset, "#", [phx_submit: :add_participant, class: "p-10", id: "participant-form"] %>
     <%= label f, :name %>
     <%= text_input f, :name %>
     <%= error_tag f, :name %>
 
-    <%= submit "Add" %>
+    <%= submit "Add", class: "inline-block text-sm bg-white p-2 rounded shadow text-gray-600 border border-gray-200"%>
     </form>
     <%= if length(@participants) > 0 do %>
     <button phx-click="schedule"
