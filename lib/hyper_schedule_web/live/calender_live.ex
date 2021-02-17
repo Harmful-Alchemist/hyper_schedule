@@ -245,7 +245,7 @@ defmodule HyperScheduleWeb.CalendarLive do
       case toggle_weekend do
         true ->
           new_dates
-          |> Enum.filter(&(!(weekend?(&1))))
+          |> Enum.filter(&(!weekend?(&1)))
 
         false ->
           new_dates

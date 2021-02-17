@@ -10,12 +10,13 @@ defmodule HyperScheduleWeb.DownloadController do
       |> Map.to_list()
       |> Enum.filter(&(Kernel.elem(&1, 0) |> String.contains?(">>")))
       |> Enum.group_by(&(Kernel.elem(&1, 0) |> String.split(">>") |> List.last()))
-      |> Enum.map(fn {key, value_tuples} ->
+      |> Enum.map(fn {_key, value_tuples} ->
         %{
           name:
             value_tuples
             |> Enum.filter(&(Kernel.elem(&1, 0) |> String.contains?("name")))
-            |> Enum.map(fn {_name_key, name} -> name end) |> List.first(),
+            |> Enum.map(fn {_name_key, name} -> name end)
+            |> List.first(),
           scheduled_dates:
             value_tuples
             |> Enum.filter(&(Kernel.elem(&1, 0) |> String.contains?("scheduled")))

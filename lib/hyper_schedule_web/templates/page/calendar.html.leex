@@ -81,7 +81,7 @@
                 class="inline-block text-sm bg-white p-2 rounded shadow text-gray-600 border border-gray-200">Hyper
             Schedule!
         </button>
-        <%= f = form_for @changeset, Routes.download_path(@socket, :csv), [target: "_blank"] %>
+        <%= _f = form_for @changeset, Routes.download_path(@socket, :csv), [target: "_blank"] %>
         <%= for {participant, i} <- Enum.with_index(@participants) |> Enum.reverse() do %>
         <input name="name>><%= i %>" type="hidden" value="<%= participant.name %>" />
         <input name="blocked>><%= i %>" type="hidden" value="<%= Enum.join(participant.blocked, ",") %>" />
