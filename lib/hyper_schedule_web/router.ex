@@ -18,6 +18,7 @@ defmodule HyperScheduleWeb.Router do
 
     get "/", PageController, :index
     get "/about", PageController, :about
+    post "/schedule.csv", DownloadController, :csv
   end
 
   # Other scopes may use custom stacks.

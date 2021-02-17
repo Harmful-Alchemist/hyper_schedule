@@ -10,7 +10,6 @@ defmodule HyperScheduleWeb.CalendarLive do
     current_date = Timex.now()
 
     assigns = [
-      conn: socket,
       #    TODO still a date replace everywhere with string!
       current_date: current_date,
       day_names: day_names(@week_start_at),
@@ -240,19 +239,19 @@ defmodule HyperScheduleWeb.CalendarLive do
       Timex.Interval.new(from: parsed_start, until: parsed_end, right_open: false)
       |> Interval.with_step(days: 1)
       |> Enum.to_list()
+      |> Enum.map(&Timex.format!(&1, "%Y-%m-%d", :strftime))
 
     new_dates =
       case toggle_weekend do
         true ->
           new_dates
-          |> Enum.filter(!(&weekend?/1))
+          |> Enum.filter(&(!(weekend?(&1))))
 
         false ->
           new_dates
       end
 
     new_dates
-    |> Enum.map(&Timex.format!(&1, "%Y-%m-%d", :strftime))
     |> Enum.concat(selected_dates)
     |> Enum.dedup()
   end
