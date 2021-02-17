@@ -29,6 +29,6 @@ defmodule HyperScheduleWeb.DownloadController do
       |> Enum.sort()
 
     csv = Enum.join([header | lines], "\n")
-    send_download(conn, {:binary, csv}, filename: "schedule.txt")
+    send_download(conn, {:binary, csv}, filename: "schedule.csv")
   end
 end
