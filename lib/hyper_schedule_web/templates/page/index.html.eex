@@ -3,8 +3,6 @@
   <p class="text-purple-500 font-bold text-center">Quickly and easily generate schedules</p>
 </figure>
 <p class="text-black-500 ont-bold text-center p-10">
-Some extra info here.
+To reset everything just refresh.
 </p>
-<p class="text-black-500 ont-bold text-center p-10">
-Even more here.</p>
 <%= live_render(@conn, HyperScheduleWeb.CalendarLive) %>
