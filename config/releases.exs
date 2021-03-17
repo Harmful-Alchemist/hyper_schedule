@@ -23,12 +23,26 @@ secret_key_base =
     You can generate one by calling: mix phx.gen.secret
     """
 
+hyper_host =
+  System.get_env("HYPER_HOST") ||
+    raise """
+    environment variable HYPER_HOST is missing.
+    Get you a host!
+    """
+
 config :hyper_schedule, HyperScheduleWeb.Endpoint,
+  server: true,
+  url: [host: hyper_host],
   http: [
     port: String.to_integer(System.get_env("PORT") || "4000"),
     transport_options: [socket_opts: [:inet6]]
   ],
   secret_key_base: secret_key_base
+#  cache_static_manifest: "priv/static/cache_manifest.json" TODO ?????????
+
+#  /\ mix phx.gen.secret
+
+config :logger, level: :info #TODO configgable
 
 # ## Using releases (Elixir v1.9+)
 #

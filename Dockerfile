@@ -42,6 +42,7 @@ RUN mix do compile, release
 
 # prepare release image
 FROM alpine:3.13 AS app
+
 RUN apk add --no-cache openssl ncurses-libs rust
 
 WORKDIR /app
