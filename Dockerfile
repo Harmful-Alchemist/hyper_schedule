@@ -52,5 +52,5 @@ USER nobody:nobody
 COPY --from=build --chown=nobody:nobody /app/_build/prod/rel/hyper_schedule ./
 
 ENV HOME=/app
-
+# Migrate by  bin/hyper_schedule eval "HyperSchedule.Release.migrate"
 CMD ["bin/hyper_schedule", "start"]

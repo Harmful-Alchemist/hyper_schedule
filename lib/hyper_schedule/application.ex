@@ -8,10 +8,11 @@ defmodule HyperSchedule.Application do
   def start(_type, _args) do
     children = [
       # Start the Ecto repository
-      HyperSchedule.Repo,
+#      HyperSchedule.Repo,
       # Start the Telemetry supervisor
       HyperScheduleWeb.Telemetry,
       # Start the PubSub system
+
       {Phoenix.PubSub, name: HyperSchedule.PubSub},
       # Start the Endpoint (http/https)
       HyperScheduleWeb.Endpoint
