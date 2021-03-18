@@ -21,18 +21,16 @@ COPY config config
 RUN mix do deps.get, deps.compile
 
 # build assets
-COPY assets/package.json assets/package-lock.json ./assets/
-RUN npm --prefix ./assets ci --progress=false --no-audit --loglevel=error
-
 COPY priv/gettext priv/gettext
 COPY priv/repo priv/repo
-COPY priv/static priv/static
 COPY assets assets
+# Tailwind scans files in the lib dir to purge the css classes
+COPY lib lib
+RUN npm --prefix ./assets ci --progress=false --no-audit --loglevel=error
 RUN npm run --prefix ./assets deploy
 RUN mix phx.digest
 
 # compile and build release
-COPY lib lib
 COPY native/scheduling/src native/scheduling/src
 COPY native/scheduling/Cargo.toml native/scheduling/Cargo.toml
 

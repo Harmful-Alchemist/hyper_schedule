@@ -37,12 +37,12 @@ config :hyper_schedule, HyperScheduleWeb.Endpoint,
     port: String.to_integer(System.get_env("PORT") || "4000"),
     transport_options: [socket_opts: [:inet6]]
   ],
-  secret_key_base: secret_key_base
-#  cache_static_manifest: "priv/static/cache_manifest.json" TODO ?????????
+  secret_key_base: secret_key_base,
+  cache_static_manifest: "priv/static/cache_manifest.json"
 
 #  /\ mix phx.gen.secret
 
-config :logger, level: :info #TODO configgable
+config :logger, level: :info
 
 # ## Using releases (Elixir v1.9+)
 #
