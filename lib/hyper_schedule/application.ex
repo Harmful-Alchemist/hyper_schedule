@@ -6,19 +6,20 @@ defmodule HyperSchedule.Application do
   use Application
 
   def start(_type, _args) do
-    children = [
-      # Start the Ecto repository
-#      HyperSchedule.Repo,
-      # Start the Telemetry supervisor
-      HyperScheduleWeb.Telemetry,
-      # Start the PubSub system
-
-      {Phoenix.PubSub, name: HyperSchedule.PubSub},
-      # Start the Endpoint (http/https)
-      HyperScheduleWeb.Endpoint
-      # Start a worker by calling: HyperSchedule.Worker.start_link(arg)
-      # {HyperSchedule.Worker, arg}
-    ]
+    children = Application.get_env(:hyper_schedule, :children)
+    #    children = [
+    #      # Start the Ecto repository
+    #      #      HyperSchedule.Repo,
+    #      # Start the Telemetry supervisor
+    #      HyperScheduleWeb.Telemetry,
+    #      # Start the PubSub system
+    #
+    #      {Phoenix.PubSub, name: HyperSchedule.PubSub},
+    #      # Start the Endpoint (http/https)
+    #      HyperScheduleWeb.Endpoint
+    #      # Start a worker by calling: HyperSchedule.Worker.start_link(arg)
+    #      # {HyperSchedule.Worker, arg}
+    #    ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options

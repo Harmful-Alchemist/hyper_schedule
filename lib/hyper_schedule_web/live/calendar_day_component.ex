@@ -1,10 +1,10 @@
 defmodule HyperSchedule.CalendarDayComponent do
   use Phoenix.LiveComponent
   use Timex
+  alias HyperSchedule.Scheduling
 
   @impl true
   def render(assigns) do
-    #    TODO look at these assigns and maybe the changed?
     assigns = Map.put(assigns, :day_class, day_class(assigns))
 
     scheduled_on_day =
@@ -40,22 +40,22 @@ defmodule HyperSchedule.CalendarDayComponent do
       #      today?(assigns) && weekend?(assigns) ->
       #        "text-xs p-2 text-gray-600 border border-gray-200 bg-green-100 cursor-not-allowed"
 
-      weekend?(assigns) ->
+      assigns.toggle_weekend && Scheduling.weekend?(assigns.day) ->
         "text-xs p-2 text-gray-600 border border-gray-200 bg-red-100 cursor-not-allowed"
 
-      today?(assigns) && selected_date?(assigns) ->
+      Scheduling.today?(assigns.day) && selected_date?(assigns) ->
         "text-xs p-2 text-gray-600 border border-gray-200 bg-green-400 hover:bg-green-500 cursor-pointer"
 
-      today?(assigns) ->
+      Scheduling.today?(assigns.day) ->
         "text-xs p-2 text-gray-600 border border-gray-200 bg-green-200 hover:bg-green-300 cursor-pointer"
 
       selected_date?(assigns) ->
         "text-xs p-2 text-gray-600 border border-gray-200 bg-blue-100 cursor-pointer"
 
-      other_month?(assigns) && selected_date?(assigns) ->
+      !Scheduling.same_month?(assigns.day) && selected_date?(assigns) ->
         "text-xs p-2 text-gray-400 border border-gray-200 bg-gray-200 bg-gray-100 hover:bg-purple-100 cursor-pointer"
 
-      other_month?(assigns) ->
+      !Scheduling.same_month?(assigns.day) ->
         "text-xs p-2 text-gray-400 border border-gray-200 bg-gray-200 bg-gray-100 hover:bg-purple-100 cursor-pointer"
 
       true ->
@@ -67,20 +67,4 @@ defmodule HyperSchedule.CalendarDayComponent do
     Enum.any?(assigns.selected_dates, &(assigns.day == &1))
   end
 
-  defp today?(assigns) do
-    assigns.day == Timex.now() |> Timex.format!("%Y-%m-%d", :strftime)
-  end
-
-  defp other_month?(assigns) do
-    #    TODO move to Scheduling
-    Map.take(assigns.day |> Timex.parse!("%Y-%m-%d", :strftime), [:year, :month]) !=
-      Map.take(assigns.current_date, [:year, :month])
-  end
-
-  defp weekend?(assigns) do
-    #   TODO Move to scheduling see also weekend? in calendar_live
-    assigns.toggle_weekend &&
-      (Timex.weekday(Timex.parse!(assigns.day, "{YYYY}-{0M}-{0D}")) == 6 ||
-         Timex.weekday(Timex.parse!(assigns.day, "{YYYY}-{0M}-{0D}")) == 7)
-  end
 end

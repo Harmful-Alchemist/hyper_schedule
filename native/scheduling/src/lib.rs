@@ -1,5 +1,5 @@
 use rustler::{Encoder, Env, Error, Term, NifStruct};
-use chrono::{NaiveDate, Duration, Datelike};
+use chrono::{NaiveDate, Duration, Datelike, Weekday, Utc};
 
 mod atoms {
     rustler::rustler_atoms! {
@@ -18,7 +18,10 @@ rustler::rustler_export_nifs! {
         ("shift_month", 2, shift_month),
         ("same_date?", 2, same_date),
         ("weekly", 1, weekly),
-        ("monthly", 1, monthly)
+        ("monthly", 1, monthly),
+        ("weekend?", 1, weekend),
+        ("same_month?", 1, same_month),
+        ("today?", 1, today)
     ],
     None
 }
@@ -39,6 +42,52 @@ fn same_date<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
             }
         }
         Err(e) => Ok((atoms::error(), e.to_string()).encode(env))
+    }
+}
+
+fn same_month<'a>(_env: Env<'a>, args: &[Term<'a>]) -> bool {
+    let date: &str = match args[0].decode() {
+        Ok(some_string) => some_string,
+        _ => "not a weekend"
+    };
+
+    match NaiveDate::parse_from_str(date, FORMAT) {
+        Ok(frm) => {
+            let result: bool = frm.month() == Utc::now().naive_utc().date().month();
+            result
+        }
+        Err(_e) => false
+    }
+}
+
+fn today<'a>(_env: Env<'a>, args: &[Term<'a>]) -> bool {
+    let date: &str = match args[0].decode() {
+        Ok(some_string) => some_string,
+        _ => "not a weekend"
+    };
+
+    match NaiveDate::parse_from_str(date, FORMAT) {
+        Ok(frm) => {
+            let result: bool = frm == Utc::now().naive_utc().date();
+            result
+        }
+        Err(_e) => false
+    }
+}
+
+fn weekend<'a>(_env: Env<'a>, args: &[Term<'a>]) -> bool {
+    let date: &str = match args[0].decode() {
+        Ok(some_string) => some_string,
+        _ => "not a weekend"
+    };
+
+    match NaiveDate::parse_from_str(date, FORMAT) {
+        Ok(frm) => {
+            let day = frm.weekday();
+            let result: bool = day == Weekday::Sat || day == Weekday::Sun;
+            result
+        }
+        Err(_e) => false
     }
 }
 
@@ -139,7 +188,6 @@ fn schedule<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
 #[module = "HyperSchedule.Participant"]
 pub struct Participant {
     name: String,
-    // TODO timezone: TimeZone, Make it international, durations first. Since we are going to supply u32 timestamps can have translation switches in a bit mask?
     blocked: Vec<String>,
     scheduled: Vec<String>,
 }
@@ -164,7 +212,7 @@ pub fn schedule_rs(mut participants: Vec<Participant>, slots: Vec<&str>) -> Vec<
         if pre_scheduled.iter().any(|scheduled| *scheduled == slot) {
             continue;
         }
-        // TODO this is dates but should be time slots. Also something with locations
+        // One day improvement: this is dates but can be time slots. Also something with locations. Maybe arbitrary dimensions to schedule against.
         let sched_date = slot;
         let thing = participants
             .iter_mut()

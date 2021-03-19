@@ -25,8 +25,6 @@ defmodule HyperScheduleWeb.CalendarLive do
     {:ok, assign(socket, assigns)}
   end
 
-  # TODO  unselect all and unschedule all
-  # TODO for blocked make list of maps %{date: "some-date", repeats: no|weekly|monthly}? Then generate per range (e.g. per month for display)
   @impl true
   def render(assigns) do
     HyperScheduleWeb.PageView.render("calendar.html", assigns)
@@ -110,7 +108,7 @@ defmodule HyperScheduleWeb.CalendarLive do
   def handle_event("toggle-weekend", _, socket) do
     selected_dates =
       socket.assigns.selected_dates
-      |> Enum.filter(&(!weekend?(&1)))
+      |> Enum.filter(&(!Scheduling.weekend?(&1)))
 
     participants =
       socket.assigns.participants
@@ -118,7 +116,7 @@ defmodule HyperScheduleWeb.CalendarLive do
         participant
         |> Map.update!(:scheduled, fn scheduled ->
           scheduled
-          |> Enum.filter(&(!weekend?(&1)))
+          |> Enum.filter(&(!Scheduling.weekend?(&1)))
         end)
       end)
 
@@ -166,9 +164,14 @@ defmodule HyperScheduleWeb.CalendarLive do
   end
 
   @impl true
-  def handle_event("add_participant", %{"participant" => params}, socket) do
-    assigns = [participants: [Participants.struct(params) | socket.assigns.participants]]
-    # TODO same name twice :)
+  def handle_event("add_participant", %{"participant" => %{"name" => name} = params}, socket) do
+    assigns =
+      cond do
+        name == "" -> []
+        socket.assigns.participants |> Enum.any?(&(&1.name == name)) -> []
+        true -> [participants: [Participants.struct(params) | socket.assigns.participants]]
+      end
+
     {:noreply, assign(socket, assigns)}
   end
 
@@ -245,7 +248,7 @@ defmodule HyperScheduleWeb.CalendarLive do
       case toggle_weekend do
         true ->
           new_dates
-          |> Enum.filter(&(!weekend?(&1)))
+          |> Enum.filter(&(!Scheduling.weekend?(&1)))
 
         false ->
           new_dates
@@ -254,11 +257,5 @@ defmodule HyperScheduleWeb.CalendarLive do
     new_dates
     |> Enum.concat(selected_dates)
     |> Enum.dedup()
-  end
-
-  defp weekend?(date) do
-    #    TODO move to scheduling
-    Timex.weekday(Timex.parse!(date, "{YYYY}-{0M}-{0D}")) == 6 ||
-      Timex.weekday(Timex.parse!(date, "{YYYY}-{0M}-{0D}")) == 7
   end
 end

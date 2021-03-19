@@ -98,6 +98,21 @@ defmodule HyperSchedule.ScheduleTest do
     assert length(scheduled_dates) == length(Enum.dedup(scheduled_dates))
   end
 
+  test "Know it's a weekend" do
+    a_week_starting_monday = [
+      "2021-03-15",
+      "2021-03-16",
+      "2021-03-17",
+      "2021-03-18",
+      "2021-03-19",
+      "2021-03-20",
+      "2021-03-21"
+    ]
+
+    weekend? = a_week_starting_monday |> Enum.map(&weekend?/1)
+    assert [false, false, false, false, false, true, true] = weekend?
+  end
+
   defp create_participant(name, blocked, scheduled) do
     %HyperSchedule.Participant{
       name: name,

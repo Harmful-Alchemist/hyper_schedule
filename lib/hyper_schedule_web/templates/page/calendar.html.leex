@@ -46,6 +46,29 @@
         <% end %>
         </tbody>
     </table>
+    <div>
+        <%= f = form_for @changeset, "#", [phx_submit: :add_participant, class: "p-10", id: "participant-form"] %>
+        <%= label f, :name %>
+        <%= text_input f, :name, class: "border-black border rounded p-2" %>
+        <%= error_tag f, :name %>
+
+        <%= submit "Add", class: "inline-block text-sm bg-white p-2 rounded shadow text-gray-600 border border-gray-200"%>
+        </form>
+        <%= if length(@participants) > 0 do %>
+        <button phx-click="schedule"
+                class="inline-block text-sm bg-white p-2 rounded shadow text-gray-600 border border-gray-200">Hyper
+            Schedule!
+        </button>
+        <%= _f = form_for @changeset, Routes.download_path(@socket, :csv), [target: "_blank"] %>
+        <%= for {participant, i} <- Enum.with_index(@participants) |> Enum.reverse() do %>
+        <input name="name>><%= i %>" type="hidden" value="<%= participant.name %>" />
+        <input name="blocked>><%= i %>" type="hidden" value="<%= Enum.join(participant.blocked, ",") %>" />
+        <input name="scheduled>><%= i %>" type="hidden" value="<%= Enum.join(participant.scheduled, ",") %>" />
+        <% end %>
+        <%= submit "Download CSV", class: "inline-block text-sm bg-white p-2 rounded shadow text-gray-600 border border-gray-200"%>
+        </form>
+        <% end %>
+    </div>
     <div class="p-10 space-y-4">
         <%= for participant <- @participants |> Enum.reverse() do %>
         <div class="bg-purple-100 rounded-xl flex items-baseline justify-between p-5">
@@ -66,29 +89,6 @@
                     class="inline-block text-sm bg-white p-2 rounded shadow text-red-600 border border-gray-200">Remove
             </button>
         </div>
-        <% end %>
-    </div>
-    <div>
-        <%= f = form_for @changeset, "#", [phx_submit: :add_participant, class: "p-10", id: "participant-form"] %>
-        <%= label f, :name %>
-        <%= text_input f, :name %>
-        <%= error_tag f, :name %>
-
-        <%= submit "Add", class: "inline-block text-sm bg-white p-2 rounded shadow text-gray-600 border border-gray-200"%>
-        </form>
-        <%= if length(@participants) > 0 do %>
-        <button phx-click="schedule"
-                class="inline-block text-sm bg-white p-2 rounded shadow text-gray-600 border border-gray-200">Hyper
-            Schedule!
-        </button>
-        <%= _f = form_for @changeset, Routes.download_path(@socket, :csv), [target: "_blank"] %>
-        <%= for {participant, i} <- Enum.with_index(@participants) |> Enum.reverse() do %>
-        <input name="name>><%= i %>" type="hidden" value="<%= participant.name %>" />
-        <input name="blocked>><%= i %>" type="hidden" value="<%= Enum.join(participant.blocked, ",") %>" />
-        <input name="scheduled>><%= i %>" type="hidden" value="<%= Enum.join(participant.scheduled, ",") %>" />
-        <% end %>
-        <%= submit "Download CSV", class: "inline-block text-sm bg-white p-2 rounded shadow text-gray-600 border border-gray-200"%>
-        </form>
         <% end %>
     </div>
 </div>

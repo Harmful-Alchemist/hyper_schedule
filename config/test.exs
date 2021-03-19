@@ -1,5 +1,19 @@
 use Mix.Config
 
+config :hyper_schedule, :children, [
+  # Start the Ecto repository
+  HyperSchedule.Repo,
+  # Start the Telemetry supervisor
+  HyperScheduleWeb.Telemetry,
+  # Start the PubSub system
+
+  {Phoenix.PubSub, name: HyperSchedule.PubSub},
+  # Start the Endpoint (http/https)
+  HyperScheduleWeb.Endpoint
+  # Start a worker by calling: HyperSchedule.Worker.start_link(arg)
+  # {HyperSchedule.Worker, arg}
+]
+
 # Configure your database
 #
 # The MIX_TEST_PARTITION environment variable can be used
