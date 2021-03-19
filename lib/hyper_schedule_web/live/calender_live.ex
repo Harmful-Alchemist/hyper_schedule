@@ -1,18 +1,15 @@
 defmodule HyperScheduleWeb.CalendarLive do
   use Phoenix.LiveView
-  use Timex
   alias HyperSchedule.{Participants, Scheduling}
-
-  @week_start_at :mon
 
   @impl true
   def mount(_params, _session, socket) do
-    current_date = Timex.now()
+    current_date = Scheduling.current_date()
 
     assigns = [
       #    TODO still a date replace everywhere with string!
       current_date: current_date,
-      day_names: day_names(@week_start_at),
+      day_names: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
       week_rows: week_rows(current_date),
       selected_dates: [],
       participants: [],
@@ -179,12 +176,10 @@ defmodule HyperScheduleWeb.CalendarLive do
   def handle_event("prev-month", _, socket) do
     {:ok, current_date} =
       Scheduling.shift(
-        socket.assigns.current_date |> Timex.format!("%Y-%m-%d", :strftime),
+        socket.assigns.current_date,
         -1,
         :month
       )
-
-    current_date = current_date |> Timex.parse!("{YYYY}-{0M}-{0D}")
 
     assigns = [
       current_date: current_date,
@@ -198,12 +193,10 @@ defmodule HyperScheduleWeb.CalendarLive do
   def handle_event("next-month", _, socket) do
     {:ok, current_date} =
       Scheduling.shift(
-        socket.assigns.current_date |> Timex.format!("%Y-%m-%d", :strftime),
+        socket.assigns.current_date,
         1,
         :month
       )
-
-    current_date = current_date |> Timex.parse!("{YYYY}-{0M}-{0D}")
 
     assigns = [
       current_date: current_date,
@@ -213,36 +206,14 @@ defmodule HyperScheduleWeb.CalendarLive do
     {:noreply, assign(socket, assigns)}
   end
 
-  defp day_names(:sun), do: [7, 1, 2, 3, 4, 5, 6] |> Enum.map(&Timex.day_shortname/1)
-  defp day_names(_), do: [1, 2, 3, 4, 5, 6, 7] |> Enum.map(&Timex.day_shortname/1)
-
   defp week_rows(current_date) do
-    first =
-      current_date
-      |> Timex.beginning_of_month()
-      |> Timex.beginning_of_week(@week_start_at)
-
-    last =
-      current_date
-      |> Timex.end_of_month()
-      |> Timex.end_of_week(@week_start_at)
-
-    Interval.new(from: first, until: last)
-    |> Enum.map(& &1)
-    |> Enum.map(&Timex.format!(&1, "%Y-%m-%d", :strftime))
-    |> Enum.chunk_every(7)
+    {:ok, days} = Scheduling.week_rows(current_date)
+    days |> Enum.chunk_every(7)
   end
 
   defp select_date_range(selected_dates, toggle_weekend, start_date, end_date) do
     #    TODO parse errors and start > end will be error now
-    {:ok, parsed_start} = Timex.parse(start_date, "{YYYY}-{0M}-{0D}")
-    {:ok, parsed_end} = Timex.parse(end_date, "{YYYY}-{0M}-{0D}")
-
-    new_dates =
-      Timex.Interval.new(from: parsed_start, until: parsed_end, right_open: false)
-      |> Interval.with_step(days: 1)
-      |> Enum.to_list()
-      |> Enum.map(&Timex.format!(&1, "%Y-%m-%d", :strftime))
+    {:ok, new_dates} = Scheduling.day_range(start_date, end_date)
 
     new_dates =
       case toggle_weekend do

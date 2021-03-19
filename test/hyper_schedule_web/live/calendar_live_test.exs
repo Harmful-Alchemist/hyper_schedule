@@ -15,7 +15,7 @@ defmodule HyperScheduleWeb.CalendarLiveTest do
     {:ok, _view, html} = live_isolated(conn, HyperScheduleWeb.CalendarLive)
     assert html =~ "prev-month"
     now = Timex.now()
-    now_formatted = Timex.format!(now, "%B %Y", :strftime)
+    now_formatted = Timex.format!(now, "%Y-%m-%d", :strftime)
     assert html =~ now_formatted
   end
 
@@ -25,22 +25,22 @@ defmodule HyperScheduleWeb.CalendarLiveTest do
     now = Timex.now()
 
     assert render_click(view, "next-month") =~
-             Timex.shift(now, months: 1) |> Timex.format!("%B %Y", :strftime)
+             Timex.shift(now, months: 1) |> Timex.format!("%Y-%m-%d", :strftime)
 
     assert render_click(view, "next-month") =~
-             Timex.shift(now, months: 2) |> Timex.format!("%B %Y", :strftime)
+             Timex.shift(now, months: 2) |> Timex.format!("%Y-%m-%d", :strftime)
 
     assert render_click(view, "prev-month") =~
-             Timex.shift(now, months: 1) |> Timex.format!("%B %Y", :strftime)
+             Timex.shift(now, months: 1) |> Timex.format!("%Y-%m-%d", :strftime)
 
     assert render_click(view, "prev-month") =~
-             Timex.shift(now, months: 0) |> Timex.format!("%B %Y", :strftime)
+             Timex.shift(now, months: 0) |> Timex.format!("%Y-%m-%d", :strftime)
 
     assert render_click(view, "prev-month") =~
-             Timex.shift(now, months: -1) |> Timex.format!("%B %Y", :strftime)
+             Timex.shift(now, months: -1) |> Timex.format!("%Y-%m-%d", :strftime)
 
     assert render_click(view, "prev-month") =~
-             Timex.shift(now, months: -2) |> Timex.format!("%B %Y", :strftime)
+             Timex.shift(now, months: -2) |> Timex.format!("%Y-%m-%d", :strftime)
   end
 
   test "can select dates", %{conn: conn} do

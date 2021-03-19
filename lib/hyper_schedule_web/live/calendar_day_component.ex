@@ -1,6 +1,5 @@
 defmodule HyperSchedule.CalendarDayComponent do
   use Phoenix.LiveComponent
-  use Timex
   alias HyperSchedule.Scheduling
 
   @impl true
@@ -52,10 +51,10 @@ defmodule HyperSchedule.CalendarDayComponent do
       selected_date?(assigns) ->
         "text-xs p-2 text-gray-600 border border-gray-200 bg-blue-100 cursor-pointer"
 
-      !Scheduling.same_month?(assigns.day) && selected_date?(assigns) ->
+      !Scheduling.same_month?(assigns.day, assigns.current_date) && selected_date?(assigns) ->
         "text-xs p-2 text-gray-400 border border-gray-200 bg-gray-200 bg-gray-100 hover:bg-purple-100 cursor-pointer"
 
-      !Scheduling.same_month?(assigns.day) ->
+      !Scheduling.same_month?(assigns.day, assigns.current_date) ->
         "text-xs p-2 text-gray-400 border border-gray-200 bg-gray-200 bg-gray-100 hover:bg-purple-100 cursor-pointer"
 
       true ->
@@ -66,5 +65,4 @@ defmodule HyperSchedule.CalendarDayComponent do
   defp selected_date?(assigns) do
     Enum.any?(assigns.selected_dates, &(assigns.day == &1))
   end
-
 end

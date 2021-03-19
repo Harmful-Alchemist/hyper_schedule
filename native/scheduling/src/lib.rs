@@ -20,8 +20,11 @@ rustler::rustler_export_nifs! {
         ("weekly", 1, weekly),
         ("monthly", 1, monthly),
         ("weekend?", 1, weekend),
-        ("same_month?", 1, same_month),
-        ("today?", 1, today)
+        ("same_month?", 2, same_month),
+        ("today?", 1, today),
+        ("week_rows", 1, week_rows),
+        ("current_date", 0, current_date),
+        ("day_range", 2 , day_range)
     ],
     None
 }
@@ -45,16 +48,60 @@ fn same_date<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
     }
 }
 
+fn day_range<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
+    let date1: &str = args[0].decode()?;
+    let date2: &str = args[1].decode()?;
+
+    match NaiveDate::parse_from_str(date1, FORMAT) {
+        Ok(frm1) => {
+            match NaiveDate::parse_from_str(date2, FORMAT) {
+                Ok(frm2) =>
+                    {
+                        let difference = NaiveDate::signed_duration_since(frm2, frm1).num_days() as usize;
+                        let days:Vec<String> = frm1.iter_days().map(|x| x.to_string()).take(difference).collect();
+                        Ok((atoms::ok(), days).encode(env))
+                    },
+                Err(e) => Ok((atoms::error(), e.to_string()).encode(env))
+            }
+        }
+        Err(e) => Ok((atoms::error(), e.to_string()).encode(env))
+    }
+}
+
+fn week_rows<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
+    let date: &str = args[0].decode()?;
+
+    match NaiveDate::parse_from_str(date, FORMAT) {
+        Ok(parsed) => {
+            let first_day_of_month = NaiveDate::from_ymd(parsed.year(), parsed.month(), 1);
+            let first_date = first_day_of_month.checked_sub_signed(Duration::days(first_day_of_month.weekday().num_days_from_monday() as i64)).unwrap();
+            let days:Vec<String> = first_date.iter_days().map(|x| x.to_string()).take(5*7).collect();
+            Ok((atoms::ok(), days).encode(env))
+        }
+        Err(e) => Ok((atoms::error(), e.to_string()).encode(env))
+    }
+}
+
 fn same_month<'a>(_env: Env<'a>, args: &[Term<'a>]) -> bool {
     let date: &str = match args[0].decode() {
         Ok(some_string) => some_string,
-        _ => "not a weekend"
+        _ => "not a date"
+    };
+
+    let date2: &str = match args[1].decode() {
+        Ok(some_string) => some_string,
+        _ => "not a date"
     };
 
     match NaiveDate::parse_from_str(date, FORMAT) {
         Ok(frm) => {
-            let result: bool = frm.month() == Utc::now().naive_utc().date().month();
-            result
+            match NaiveDate::parse_from_str(date2, FORMAT) {
+                Ok(frm2) => {
+                    let result: bool = frm.month() == frm2.month();
+                    result
+                }
+                Err(_e) => false
+            }
         }
         Err(_e) => false
     }
@@ -73,6 +120,10 @@ fn today<'a>(_env: Env<'a>, args: &[Term<'a>]) -> bool {
         }
         Err(_e) => false
     }
+}
+
+fn current_date<'a>(_env: Env<'a>, _args: &[Term<'a>]) -> String {
+    Utc::now().naive_utc().date().to_string()
 }
 
 fn weekend<'a>(_env: Env<'a>, args: &[Term<'a>]) -> bool {

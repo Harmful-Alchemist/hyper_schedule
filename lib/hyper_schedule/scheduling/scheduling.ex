@@ -26,7 +26,13 @@ defmodule HyperSchedule.Scheduling do
 
   def weekend?(_date), do: :erlang.nif_error(:nif_not_loaded)
 
-  def same_month?(_date), do: :erlang.nif_error(:nif_not_loaded)
+  def same_month?(_date, _date2), do: :erlang.nif_error(:nif_not_loaded)
 
   def today?(_date), do: :erlang.nif_error(:nif_not_loaded)
+
+  def week_rows(_date), do: :erlang.nif_error(:nif_not_loaded)
+
+  def current_date(), do: :erlang.nif_error(:nif_not_loaded)
+
+  def day_range(_start_date, _end_date), do: :erlang.nif_error(:nif_not_loaded)
 end

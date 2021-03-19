@@ -49,7 +49,7 @@ defmodule HyperSchedule.MixProject do
       {:rustler, "~> 0.21.1"},
       {:phoenix_live_view, "~> 0.15.3"},
       {:floki, ">= 0.27.0", only: :test},
-      {:timex, "~> 3.6"}
+      {:timex, "~> 3.6", only: :test}
     ]
   end
 

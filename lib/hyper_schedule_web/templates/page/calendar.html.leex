@@ -1,7 +1,7 @@
 <div class="p-10">
     <div class="flex items-baseline justify-between">
         <h3 class="ml-4 text-gray-600 text-lg">
-            <%= Timex.format!(@current_date, "%B %Y", :strftime) %>
+            <%= @current_date %>
         </h3>
         <form phx-submit="select-date-range">
             <label for="start-date">Start date schedule:</label>
