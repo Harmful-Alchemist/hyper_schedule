@@ -7,7 +7,6 @@ defmodule HyperScheduleWeb.CalendarLive do
     current_date = Scheduling.current_date()
 
     assigns = [
-      #    TODO still a date replace everywhere with string!
       current_date: current_date,
       day_names: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
       week_rows: week_rows(current_date),

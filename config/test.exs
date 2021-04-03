@@ -24,6 +24,9 @@ config :hyper_schedule, HyperSchedule.Repo,
   password: "postgres",
   database: "hyper_schedule_test#{System.get_env("MIX_TEST_PARTITION")}",
   hostname: "localhost",
+  #  Thanks WSL2, back to v1
+  #    System.get_env("DATABASE_HOST_TEST") ||
+  #      System.cmd("awk", ["'/nameserver/ { print $2 }'", "/etc/resolv.conf"]),
   pool: Ecto.Adapters.SQL.Sandbox
 
 # We don't run a server during test. If one is required,

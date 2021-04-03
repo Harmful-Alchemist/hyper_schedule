@@ -4,7 +4,7 @@ defmodule HyperScheduleWeb.DownloadController do
 
   def csv(conn, participants) do
     header = "Date,Scheduled"
-    # TODO create the csv make sure the assigns stay in the socket after download also test!
+
     lines =
       participants
       |> Map.to_list()
