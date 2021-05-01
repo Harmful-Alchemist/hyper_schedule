@@ -48,14 +48,14 @@ defmodule HyperSchedule.CalendarDayComponent do
       Scheduling.today?(assigns.day) ->
         "text-xs p-2 text-gray-600 border border-gray-200 bg-green-200 hover:bg-green-300 cursor-pointer"
 
+      !Scheduling.same_month?(assigns.day, assigns.current_date) && selected_date?(assigns) ->
+        "text-xs p-2 text-gray-400 border border-gray-200 bg-gray-300 hover:bg-purple-100 cursor-pointer"
+
       selected_date?(assigns) ->
         "text-xs p-2 text-gray-600 border border-gray-200 bg-blue-100 cursor-pointer"
 
-      !Scheduling.same_month?(assigns.day, assigns.current_date) && selected_date?(assigns) ->
-        "text-xs p-2 text-gray-400 border border-gray-200 bg-gray-200 bg-gray-100 hover:bg-purple-100 cursor-pointer"
-
       !Scheduling.same_month?(assigns.day, assigns.current_date) ->
-        "text-xs p-2 text-gray-400 border border-gray-200 bg-gray-200 bg-gray-100 hover:bg-purple-100 cursor-pointer"
+        "text-xs p-2 text-gray-400 border border-gray-200 bg-gray-200 hover:bg-purple-100 cursor-pointer"
 
       true ->
         "text-xs p-2 text-gray-600 border border-gray-200 bg-white hover:bg-purple-300 cursor-pointer"

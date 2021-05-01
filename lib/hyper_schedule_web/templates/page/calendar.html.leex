@@ -3,7 +3,7 @@
         <h3 class="ml-4 text-gray-600 text-lg">
             <%= @current_date %>
         </h3>
-        <form phx-submit="select-date-range">
+        <form phx-submit="select-date-range" id="select-date-range">
             <label for="start-date">Start date schedule:</label>
             <input type="date" id="start-date" name="start-date" value="<%= @start_date %>"/>
             <label for="end-date">End date schedule:</label>
@@ -72,7 +72,7 @@
     <div class="p-10 space-y-4">
         <%= for participant <- @participants |> Enum.reverse() do %>
         <div class="bg-purple-100 rounded-xl flex items-baseline justify-between p-5">
-            <form phx-submit="blocked-dates">
+            <form phx-submit="blocked-dates" id="blocked-dates<%= participant.name %>">
                 <label for="name">name</label>
                 <input type="text" value="<%= participant.name %>" name="name"><% #<!-- TODO should be disabled, but still get the value --> %>
                 <label for="blocked-date">Blocked on:</label>

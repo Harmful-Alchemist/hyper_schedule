@@ -11,6 +11,10 @@ defmodule HyperScheduleWeb.CalendarLiveTest do
 
   @weekend "text-xs p-2 text-gray-600 border border-gray-200 bg-red-100 cursor-not-allowed"
 
+  @not_in_month "text-xs p-2 text-gray-400 border border-gray-200 bg-gray-200 hover:bg-purple-100 cursor-pointer"
+
+  @not_in_month_selected "text-xs p-2 text-gray-400 border border-gray-200 bg-gray-300 hover:bg-purple-100 cursor-pointer"
+
   test "connected mount", %{conn: conn} do
     {:ok, _view, html} = live_isolated(conn, HyperScheduleWeb.CalendarLive)
     assert html =~ "prev-month"
@@ -50,10 +54,12 @@ defmodule HyperScheduleWeb.CalendarLiveTest do
     now = Timex.now()
     now_formatted = Timex.format!(now, "%Y-%m-%d", :strftime)
 
+    in_month = now |> Timex.beginning_of_month()
+
     in_month =
-      case Timex.compare(Timex.shift(now, days: -1), now, :month) do
-        0 -> Timex.shift(now, days: -1)
-        _ -> Timex.shift(now, days: 1)
+      case Timex.compare(now, in_month, :day) do
+        0 -> Timex.shift(now, days: 1)
+        _ -> in_month
       end
 
     in_month_formatted = Timex.format!(in_month, "%Y-%m-%d", :strftime)
@@ -73,7 +79,20 @@ defmodule HyperScheduleWeb.CalendarLiveTest do
     assert render_click(view, "pick-date", date: in_month_formatted) =~
              "phx-value-date=\"#{in_month_formatted}\" class=\"#{@not_styled}\""
 
-    # TODO the not in month selected and unselected
+    {:ok, days_shown} = HyperSchedule.Scheduling.week_rows(now_formatted)
+
+    days_shown_not_month =
+      days_shown
+      |> Enum.filter(fn e -> !HyperSchedule.Scheduling.same_month?(e, now_formatted) end)
+
+    for day_not_in_month <- days_shown_not_month do
+      assert html =~ "phx-value-date=\"#{day_not_in_month}\" class=\"#{@not_in_month}\""
+    end
+
+    [not_in_month | _] = days_shown_not_month
+
+    assert render_click(view, "pick-date", date: not_in_month) =~
+             "phx-value-date=\"#{not_in_month}\" class=\"#{@not_in_month_selected}\""
   end
 
   test "can add participants", %{conn: conn} do
@@ -90,6 +109,19 @@ defmodule HyperScheduleWeb.CalendarLiveTest do
            |> form("form#participant-form", participant: %{name: name2})
            |> render_submit =~
              "<label for=\"name\">name</label><input type=\"text\" value=\"#{name2}\" name=\"name\"/>"
+  end
+
+  test "can remove participants", %{conn: conn} do
+    {:ok, view, _html} = live_isolated(conn, HyperScheduleWeb.CalendarLive)
+    name = "name1"
+
+    assert view
+           |> form("form#participant-form", participant: %{name: name})
+           |> render_submit =~
+             "<label for=\"name\">name</label><input type=\"text\" value=\"#{name}\" name=\"name\"/>"
+
+    refute render_click(view, "remove-participant", %{"name" => name}) =~
+             "<label for=\"name\">name</label><input type=\"text\" value=\"#{name}\" name=\"name\"/>"
   end
 
   test "can schedule", %{conn: conn} do
@@ -150,7 +182,38 @@ defmodule HyperScheduleWeb.CalendarLiveTest do
     end
   end
 
-  #  TODO weekends and interactions scheduled dates!
+  test "can't  schedule on blocked dates", %{conn: conn} do
+    {:ok, view, _html} = live_isolated(conn, HyperScheduleWeb.CalendarLive)
+    name = "name1"
+
+    render_click(view, "toggle-weekend")
+
+    first_day_of_month =
+      Timex.now() |> Timex.beginning_of_month() |> Timex.format!("%Y-%m-%d", :strftime)
+
+    view
+    |> form("form#participant-form", participant: %{name: name})
+    |> render_submit
+
+    blocked =
+      view
+      |> form("form#blocked-dates#{name}", %{
+        "blocked-date" => first_day_of_month,
+        "name" => name,
+        "repeats" => "never"
+      })
+      |> render_submit
+
+    assert blocked =~
+             "01\n  \n        \n  <div class=\"text-bold bg-purple\"><s>#{name}</s></div>"
+
+    render_click(view, "pick-date", date: first_day_of_month)
+    scheduled = render_click(view, "schedule")
+    # Still strike through after scheduling
+    assert scheduled =~
+             "01\n  \n        \n  <div class=\"text-bold bg-purple\"><s>#{name}</s></div>"
+  end
+
   test "weekends work", %{conn: conn} do
     first_saturday = Timex.now() |> Timex.beginning_of_month() |> first_saturday()
     first_sunday = Timex.shift(first_saturday, days: 1)
@@ -218,6 +281,58 @@ defmodule HyperScheduleWeb.CalendarLiveTest do
     assert toggled_back =~ "phx-value-date=\"#{sat_formatted}\" class=\"#{@weekend}\""
     assert toggled_back =~ "phx-value-date=\"#{sun_formatted}\" class=\"#{@weekend}\""
     assert toggled_back =~ "phx-value-date=\"#{mon_formatted}\" class=\"#{@selected}\""
+  end
+
+  test "select range of dates", %{conn: conn} do
+    today = Timex.now() |> Timex.format!("%Y-%m-%d", :strftime)
+
+    first_saturday_not_formatted =
+      Timex.now()
+      |> Timex.beginning_of_month()
+      |> first_saturday()
+
+    first_saturday =
+      first_saturday_not_formatted
+      |> Timex.format!("%Y-%m-%d", :strftime)
+
+    two_months_later =
+      first_saturday_not_formatted
+      |> Timex.shift(months: 2)
+      |> Timex.format!("%Y-%m-%d", :strftime)
+
+    {:ok, view, _html} = live_isolated(conn, HyperScheduleWeb.CalendarLive)
+    render_click(view, "toggle-weekend")
+
+    scheduled =
+      view
+      |> form("form#select-date-range", %{
+        "end-date" => two_months_later,
+        "start-date" => first_saturday
+      })
+      |> render_submit()
+
+    for i <- 0..20 do
+      formatted =
+        first_saturday_not_formatted
+        |> Timex.shift(days: i)
+        |> Timex.format!("%Y-%m-%d", :strftime)
+
+      if formatted == today do
+        assert scheduled =~ "phx-value-date=\"#{formatted}\" class=\"#{@today_selected}\""
+      else
+        assert scheduled =~ "phx-value-date=\"#{formatted}\" class=\"#{@selected}\""
+      end
+    end
+
+    next_month = render_click(view, "next-month")
+
+    first_next_month =
+      first_saturday_not_formatted |> Timex.beginning_of_month() |> Timex.shift(months: 1)
+
+    for i <- 0..27 do
+      formatted = first_next_month |> Timex.shift(days: i) |> Timex.format!("%Y-%m-%d", :strftime)
+      assert next_month =~ "phx-value-date=\"#{formatted}\" class=\"#{@selected}\""
+    end
   end
 
   defp first_saturday(date) do
