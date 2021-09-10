@@ -2,7 +2,7 @@
 
 Visit a running version [here](https://hyperschedule.online). Start-up time can be a bit slow since the server is spun up on demand. 
 
-To the server:
+To start the server:
 
   * Install dependencies with `mix deps.get`
   * Create and migrate your database with `mix ecto.setup`
