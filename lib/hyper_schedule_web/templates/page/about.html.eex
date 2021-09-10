@@ -3,15 +3,20 @@
     <p class="text-purple-500 font-bold text-center">Quickly and easily generate schedules</p>
 </figure>
 <p class="text-purple-500 font-bold text-center pt-5">How it works</p>
-<p class="text-black-500 ont-bold text-center p-5">
-    Some extra info here.
+<p class="text-black-500 text-center p-5">
+    Sometimes you just want to divide dates over a group of people, to do so:
 </p>
-<p class="text-purple-500 font-bold text-center">Pricing</p>
-<p class="text-black-500 ont-bold text-center p-5">
-    Some extra info here.
-</p>
-<p class="text-purple-500 font-bold text-center">About me</p>
-<p class="text-black-500 ont-bold text-center p-5">
-    Some extra info here.
+    <ul class="list-disc text-black-500 text-center">
+    <li>Select the dates you want.</li>
+    <li>Add people to schedule for.</li>
+    <li>Add dates people are unavailable.</li>
+    <li>Schedule, so each date contains one person.</li>
+    <li>Download the schedule as a csv file.</li>
+    </ul>
+
+<p class="text-purple-500 font-bold text-center">About this</p>
+<p class="text-black-500 text-center p-5">
+    Take a look on <a href="https://github.com/Harmful-Alchemist/hyper_schedule" class="underline text-blue-600 hover:text-blue-800 visited:text-purple-600">github</a>
+
 </p>
 
