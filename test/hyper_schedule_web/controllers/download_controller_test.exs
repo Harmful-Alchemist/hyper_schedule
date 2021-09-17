@@ -56,8 +56,5 @@ defmodule HyperScheduleWeb.DownloadControllerTest do
 #{first_day_of_month |> Timex.shift(days: 4) |> Timex.format!("%Y-%m-%d", :strftime)},name2
 #{first_day_of_month |> Timex.shift(days: 5) |> Timex.format!("%Y-%m-%d", :strftime)},name3"
 
-    #    csv = view |> form("form#csv_form") |> render_submit()
-    #
-    #    IO.inspect(csv)
   end
 end
