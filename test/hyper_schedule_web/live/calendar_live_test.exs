@@ -83,7 +83,7 @@ defmodule HyperScheduleWeb.CalendarLiveTest do
 
     days_shown_not_month =
       days_shown
-      |> Enum.filter(fn e -> !HyperSchedule.Scheduling.same_month?(e, now_formatted) end)
+      |> Enum.filter(fn e -> !HyperSchedule.Scheduling.same_month(e, now_formatted) end)
 
     for day_not_in_month <- days_shown_not_month do
       assert html =~ "phx-value-date=\"#{day_not_in_month}\" class=\"#{@not_in_month}\""

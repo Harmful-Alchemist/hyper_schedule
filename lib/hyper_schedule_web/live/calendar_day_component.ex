@@ -36,25 +36,25 @@ defmodule HyperSchedule.CalendarDayComponent do
 
   defp day_class(assigns) do
     cond do
-      #      today?(assigns) && weekend?(assigns) ->
+      #      today(assigns) && weekend(assigns) ->
       #        "text-xs p-2 text-gray-600 border border-gray-200 bg-green-100 cursor-not-allowed"
 
-      assigns.toggle_weekend && Scheduling.weekend?(assigns.day) ->
+      assigns.toggle_weekend && Scheduling.weekend(assigns.day) ->
         "text-xs p-2 text-gray-600 border border-gray-200 bg-red-100 cursor-not-allowed"
 
-      Scheduling.today?(assigns.day) && selected_date?(assigns) ->
+      Scheduling.today(assigns.day) && selected_date?(assigns) ->
         "text-xs p-2 text-gray-600 border border-gray-200 bg-green-400 hover:bg-green-500 cursor-pointer"
 
-      Scheduling.today?(assigns.day) ->
+      Scheduling.today(assigns.day) ->
         "text-xs p-2 text-gray-600 border border-gray-200 bg-green-200 hover:bg-green-300 cursor-pointer"
 
-      !Scheduling.same_month?(assigns.day, assigns.current_date) && selected_date?(assigns) ->
+      !Scheduling.same_month(assigns.day, assigns.current_date) && selected_date?(assigns) ->
         "text-xs p-2 text-gray-400 border border-gray-200 bg-gray-300 hover:bg-purple-100 cursor-pointer"
 
       selected_date?(assigns) ->
         "text-xs p-2 text-gray-600 border border-gray-200 bg-blue-100 cursor-pointer"
 
-      !Scheduling.same_month?(assigns.day, assigns.current_date) ->
+      !Scheduling.same_month(assigns.day, assigns.current_date) ->
         "text-xs p-2 text-gray-400 border border-gray-200 bg-gray-200 hover:bg-purple-100 cursor-pointer"
 
       true ->

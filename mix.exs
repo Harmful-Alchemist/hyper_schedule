@@ -4,11 +4,10 @@ defmodule HyperSchedule.MixProject do
   def project do
     [
       app: :hyper_schedule,
-      version: "0.1.6",
-      elixir: "~> 1.11",
+      version: "0.1.7",
+      elixir: "~> 1.12",
       elixirc_paths: elixirc_paths(Mix.env()),
-      compilers: [:phoenix, :gettext, :rustler] ++ Mix.compilers(),
-      rustler_crates: [scheduling: []],
+      compilers: [:phoenix, :gettext] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps()
@@ -46,7 +45,7 @@ defmodule HyperSchedule.MixProject do
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
-      {:rustler, "~> 0.21.1"},
+      {:rustler, "~> 0.22.2"},
       {:phoenix_live_view, "~> 0.15.3"},
       {:floki, ">= 0.27.0", only: :test},
       {:timex, "~> 3.6", only: :test}

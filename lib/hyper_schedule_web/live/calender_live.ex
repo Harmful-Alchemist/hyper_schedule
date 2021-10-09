@@ -104,7 +104,7 @@ defmodule HyperScheduleWeb.CalendarLive do
   def handle_event("toggle-weekend", _, socket) do
     selected_dates =
       socket.assigns.selected_dates
-      |> Enum.filter(&(!Scheduling.weekend?(&1)))
+      |> Enum.filter(&(!Scheduling.weekend(&1)))
 
     participants =
       socket.assigns.participants
@@ -112,7 +112,7 @@ defmodule HyperScheduleWeb.CalendarLive do
         participant
         |> Map.update!(:scheduled, fn scheduled ->
           scheduled
-          |> Enum.filter(&(!Scheduling.weekend?(&1)))
+          |> Enum.filter(&(!Scheduling.weekend(&1)))
         end)
       end)
 
@@ -153,7 +153,7 @@ defmodule HyperScheduleWeb.CalendarLive do
       end)
 
     # TODO error handling
-    {:ok, schedule} = Scheduling.schedule!(timestamped_participants, slots)
+    {:ok, schedule} = Scheduling.schedule(timestamped_participants, slots)
 
     assigns = [participants: schedule]
     {:noreply, assign(socket, assigns)}
@@ -218,7 +218,7 @@ defmodule HyperScheduleWeb.CalendarLive do
       case toggle_weekend do
         true ->
           new_dates
-          |> Enum.filter(&(!Scheduling.weekend?(&1)))
+          |> Enum.filter(&(!Scheduling.weekend(&1)))
 
         false ->
           new_dates

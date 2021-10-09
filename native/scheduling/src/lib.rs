@@ -1,99 +1,68 @@
-use rustler::{Encoder, Env, Error, Term, NifStruct};
+use rustler::{NifStruct};
 use chrono::{NaiveDate, Duration, Datelike, Weekday, Utc};
 
 mod atoms {
-    rustler::rustler_atoms! {
-        atom ok;
-        atom error;
-        //atom __true__ = "true";
-        //atom __false__ = "false";
+    rustler::atoms! {
+        ok,
+        error
     }
 }
 
-rustler::rustler_export_nifs! {
-    "Elixir.HyperSchedule.Scheduling",
-    [
-        ("schedule!", 2, schedule),
-        ("shift_day", 2, shift),
-        ("shift_month", 2, shift_month),
-        ("same_date?", 2, same_date),
-        ("weekly", 1, weekly),
-        ("monthly", 1, monthly),
-        ("weekend?", 1, weekend),
-        ("same_month?", 2, same_month),
-        ("today?", 1, today),
-        ("week_rows", 1, week_rows),
-        ("current_date", 0, current_date),
-        ("day_range", 2 , day_range)
-    ],
-    None
-}
+rustler::init!("Elixir.HyperSchedule.Scheduling", [
+    same_date,
+    current_date,
+    week_rows,
+    weekend,
+    today,
+    same_month,
+    day_range,
+    shift_day,
+    weekly,
+    monthly,
+    shift_month,
+    schedule
+]);
 
 const FORMAT: &str = "%Y-%m-%d";
 
-const MONTHS31: [u32;7] = [1, 3, 5, 7, 8, 10, 12];
+const MONTHS31: [u32; 7] = [1, 3, 5, 7, 8, 10, 12];
 
-fn same_date<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
-    let date1: &str = args[0].decode()?;
-    let date2: &str = args[1].decode()?;
+fn help_parse_error(to_parse: &str) -> Result<NaiveDate, String> {
+    match NaiveDate::parse_from_str(to_parse, FORMAT) {
+        Ok(a) => Ok(a),
+        Err(e) => Err(e.to_string())
+    }
+}
 
+#[rustler::nif]
+fn same_date(date1: &str, date2: &str) -> Result<bool, String> {
+    let comp1 = help_parse_error(date1)?;
+    let comp2 = help_parse_error(date2)?;
+
+    Ok(comp1 == comp2)
+}
+
+#[rustler::nif]
+fn day_range(date1: &str, date2: &str) -> Result<Vec<String>, String> {
+    let frm1 = help_parse_error(date1)?;
+    let frm2 = help_parse_error(date2)?;
+    let difference = NaiveDate::signed_duration_since(frm2, frm1).num_days() as usize;
+    let days: Vec<String> = frm1.iter_days().map(|x| x.to_string()).take(difference).collect();
+    Ok(days)
+}
+
+#[rustler::nif]
+fn week_rows(date: &str) -> Result<Vec<String>, String> {
+    let parsed = help_parse_error(date)?;
+    let first_day_of_month = NaiveDate::from_ymd(parsed.year(), parsed.month(), 1);
+    let first_date = first_day_of_month.checked_sub_signed(Duration::days(first_day_of_month.weekday().num_days_from_monday() as i64)).unwrap();
+    let days: Vec<String> = first_date.iter_days().map(|x| x.to_string()).take(5 * 7).collect();
+    Ok(days)
+}
+
+#[rustler::nif]
+fn same_month(date1: &str, date2: &str) -> bool {
     match NaiveDate::parse_from_str(date1, FORMAT) {
-        Ok(frm1) => {
-            match NaiveDate::parse_from_str(date2, FORMAT) {
-                Ok(frm2) => Ok((atoms::ok(), frm1 == frm2).encode(env)),
-                Err(e) => Ok((atoms::error(), e.to_string()).encode(env))
-            }
-        }
-        Err(e) => Ok((atoms::error(), e.to_string()).encode(env))
-    }
-}
-
-fn day_range<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
-    let date1: &str = args[0].decode()?;
-    let date2: &str = args[1].decode()?;
-
-    match NaiveDate::parse_from_str(date1, FORMAT) {
-        Ok(frm1) => {
-            match NaiveDate::parse_from_str(date2, FORMAT) {
-                Ok(frm2) =>
-                    {
-                        let difference = NaiveDate::signed_duration_since(frm2, frm1).num_days() as usize;
-                        let days:Vec<String> = frm1.iter_days().map(|x| x.to_string()).take(difference).collect();
-                        Ok((atoms::ok(), days).encode(env))
-                    },
-                Err(e) => Ok((atoms::error(), e.to_string()).encode(env))
-            }
-        }
-        Err(e) => Ok((atoms::error(), e.to_string()).encode(env))
-    }
-}
-
-fn week_rows<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
-    let date: &str = args[0].decode()?;
-
-    match NaiveDate::parse_from_str(date, FORMAT) {
-        Ok(parsed) => {
-            let first_day_of_month = NaiveDate::from_ymd(parsed.year(), parsed.month(), 1);
-            let first_date = first_day_of_month.checked_sub_signed(Duration::days(first_day_of_month.weekday().num_days_from_monday() as i64)).unwrap();
-            let days:Vec<String> = first_date.iter_days().map(|x| x.to_string()).take(5*7).collect();
-            Ok((atoms::ok(), days).encode(env))
-        }
-        Err(e) => Ok((atoms::error(), e.to_string()).encode(env))
-    }
-}
-
-fn same_month<'a>(_env: Env<'a>, args: &[Term<'a>]) -> bool {
-    let date: &str = match args[0].decode() {
-        Ok(some_string) => some_string,
-        _ => "not a date"
-    };
-
-    let date2: &str = match args[1].decode() {
-        Ok(some_string) => some_string,
-        _ => "not a date"
-    };
-
-    match NaiveDate::parse_from_str(date, FORMAT) {
         Ok(frm) => {
             match NaiveDate::parse_from_str(date2, FORMAT) {
                 Ok(frm2) => {
@@ -107,12 +76,8 @@ fn same_month<'a>(_env: Env<'a>, args: &[Term<'a>]) -> bool {
     }
 }
 
-fn today<'a>(_env: Env<'a>, args: &[Term<'a>]) -> bool {
-    let date: &str = match args[0].decode() {
-        Ok(some_string) => some_string,
-        _ => "not a weekend"
-    };
-
+#[rustler::nif]
+fn today(date: &str) -> bool {
     match NaiveDate::parse_from_str(date, FORMAT) {
         Ok(frm) => {
             let result: bool = frm == Utc::now().naive_utc().date();
@@ -122,16 +87,13 @@ fn today<'a>(_env: Env<'a>, args: &[Term<'a>]) -> bool {
     }
 }
 
-fn current_date<'a>(_env: Env<'a>, _args: &[Term<'a>]) -> String {
+#[rustler::nif]
+fn current_date() -> String {
     Utc::now().naive_utc().date().to_string()
 }
 
-fn weekend<'a>(_env: Env<'a>, args: &[Term<'a>]) -> bool {
-    let date: &str = match args[0].decode() {
-        Ok(some_string) => some_string,
-        _ => "not a weekend"
-    };
-
+#[rustler::nif]
+fn weekend(date: &str) -> bool {
     match NaiveDate::parse_from_str(date, FORMAT) {
         Ok(frm) => {
             let day = frm.weekday();
@@ -142,97 +104,76 @@ fn weekend<'a>(_env: Env<'a>, args: &[Term<'a>]) -> bool {
     }
 }
 
-fn shift<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
-    let date: &str = args[0].decode()?;
-    let days: i64 = args[1].decode()?;
-
+#[rustler::nif]
+fn shift_day(date: &str, days: i64) -> Result<String, String> {
     match NaiveDate::parse_from_str(date, FORMAT) {
         Ok(parsed) => {
             let new = parsed + Duration::days(days);
-            Ok((atoms::ok(), new.format(FORMAT).to_string()).encode(env))
+            Ok(new.format(FORMAT).to_string())
         }
-        Err(e) => Ok((atoms::error(), e.to_string()).encode(env))
+        Err(e) => Err(e.to_string())
     }
 }
 
-fn weekly<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
-    let date: &str = args[0].decode()?;
-
-    match NaiveDate::parse_from_str(date, FORMAT) {
-        Ok(parsed) => {
-            let mut  days= Vec::new();
-            for i in 0..51 {
-                let new = parsed + Duration::days(i * 7);
-                days.push(new.format(FORMAT).to_string())
-            }
-            Ok((atoms::ok(), days).encode(env))
-        }
-        Err(e) => Ok((atoms::error(), e.to_string()).encode(env))
+#[rustler::nif]
+fn weekly(date: &str) -> Result<Vec<String>, String> {
+    let parsed = help_parse_error(date)?;
+    let mut days = Vec::new();
+    for i in 0..51 {
+        let new = parsed + Duration::days(i * 7);
+        days.push(new.format(FORMAT).to_string())
     }
+    Ok(days)
 }
 
-fn monthly<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
-    let date: &str = args[0].decode()?;
+#[rustler::nif]
+fn monthly(date: &str) -> Result<Vec<String>, String> {
+    let parsed = help_parse_error(date)?;
+    let mut days = Vec::new();
+    days.push(String::from(date));
+    for i in 1..11 {
+        let (month, year) = match parsed.month() + i > 12 {
+            true => (parsed.month() + i - 12, parsed.year() + 1),
+            false => (parsed.month() + i, parsed.year())
+        };
 
-    match NaiveDate::parse_from_str(date, FORMAT) {
-        Ok(parsed) => {
-            let mut days= Vec::new();
-            days.push(String::from(date));
-            for i in 1..11 {
-                let (month, year) = match parsed.month() + i > 12 {
-                    true => (parsed.month() + i -12, parsed.year()+1),
-                    false => (parsed.month() + i, parsed.year())
-                };
-
-                if parsed.day() == 31 && !MONTHS31.contains(&month) {
-                    //do nothing
-                } else if parsed.day() > 28 && month == 2 {
-                    //do nothing
-                } else {
-                    let new= NaiveDate::from_ymd(year, month, parsed.day()).format(FORMAT).to_string();
-                    days.push(new);
-                }
-
-            }
-            Ok((atoms::ok(), days).encode(env))
+        if parsed.day() == 31 && !MONTHS31.contains(&month) {
+            //do nothing
+        } else if parsed.day() > 28 && month == 2 {
+            //do nothing
+        } else {
+            let new = NaiveDate::from_ymd(year, month, parsed.day()).format(FORMAT).to_string();
+            days.push(new);
         }
-        Err(e) => Ok((atoms::error(), e.to_string()).encode(env))
     }
+    Ok(days)
 }
 
-fn shift_month<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
-    let date: &str = args[0].decode()?;
-    let months: i32 = args[1].decode()?;
-
+#[rustler::nif]
+fn shift_month(date: &str, months: i32) -> Result<String, String> {
     if months > 1 || months < -1 {
-         return Ok((atoms::error(), "Can't shift more than one month").encode(env));
+        return Err("Can't shift more than one month".to_string());
     }
+    let parsed = help_parse_error(date)?;
 
-    match NaiveDate::parse_from_str(date, FORMAT) {
-        Ok(parsed) => {
-                let day = match parsed.day() > 28 {
-                    true => 28,
-                    false => parsed.day()
-                };
-                let (year, month) = match (parsed.year(), parsed.month() as i32 + months > 12, parsed.month() as i32 +months < 1) {
-                    (year, true, false) => (year + 1, 1),
-                    (year, false, true) => (year - 1, 12),
-                    (year, _, _) => (year, parsed.month() as i32 + months)
-                };
-                let new = NaiveDate::from_ymd(year, month as u32, day);
-            Ok((atoms::ok(), new.format(FORMAT).to_string()).encode(env))
-        }
-        Err(e) => Ok((atoms::error(), e.to_string()).encode(env))
-    }
+    let day = match parsed.day() > 28 {
+        true => 28,
+        false => parsed.day()
+    };
+    let (year, month) = match (parsed.year(), parsed.month() as i32 + months > 12, parsed.month() as i32 + months < 1) {
+        (year, true, false) => (year + 1, 1),
+        (year, false, true) => (year - 1, 12),
+        (year, _, _) => (year, parsed.month() as i32 + months)
+    };
+    let new = NaiveDate::from_ymd(year, month as u32, day);
+    Ok(new.format(FORMAT).to_string())
 }
 
-fn schedule<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
-    let participants: Vec<Participant> = args[0].decode()?;
-    let slots: Vec<&str> = args[1].decode()?;
-
+#[rustler::nif]
+fn schedule(participants: Vec<Participant>, slots: Vec<&str>) -> Result<Vec<Participant>, String> {
     let result = schedule_rs(participants, slots);
 
-    Ok((atoms::ok(), result).encode(env))
+    Ok(result)
 }
 
 #[derive(Debug, NifStruct, Clone)]

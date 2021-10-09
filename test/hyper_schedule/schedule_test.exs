@@ -57,7 +57,7 @@ defmodule HyperSchedule.ScheduleTest do
       |> Enum.map(&NaiveDateTime.to_date/1)
 
     dates = date_times |> Enum.map(&Timex.format!(&1, "%Y-%m-%d", :strftime))
-    {:ok, schedule} = schedule!(participants, dates)
+    {:ok, schedule} = schedule(participants, dates)
 
     # All names in the schedule
     assert Enum.map(schedule, & &1.name) == Enum.map(participants, & &1.name)
@@ -109,8 +109,8 @@ defmodule HyperSchedule.ScheduleTest do
       "2021-03-21"
     ]
 
-    weekend? = a_week_starting_monday |> Enum.map(&weekend?/1)
-    assert [false, false, false, false, false, true, true] = weekend?
+    weekend = a_week_starting_monday |> Enum.map(&weekend/1)
+    assert [false, false, false, false, false, true, true] = weekend
   end
 
   defp create_participant(name, blocked, scheduled) do

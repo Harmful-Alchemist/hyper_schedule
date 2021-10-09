@@ -13,7 +13,7 @@ defmodule HyperScheduleWeb.ScheduleController do
           scheduled: participant["scheduled"]
         }
       end)
-      |> schedule!(dates)
+      |> schedule(dates)
 
     render(conn, "participants.json", participants: participants)
   end
