@@ -5,7 +5,7 @@
 
 @tailwind utilities;
 
-//@import "./phoenix.css";
+/*@import "./phoenix.css";*/
 
 /* Alerts and form errors TODO check if needed :P */
 .alert {

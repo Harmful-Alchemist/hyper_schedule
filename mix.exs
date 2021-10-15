@@ -49,6 +49,7 @@ defmodule HyperSchedule.MixProject do
       {:phoenix_live_view, "~> 0.16.4"},
       {:floki, ">= 0.27.0", only: :test},
       {:timex, "~> 3.6", only: :test},
+      {:esbuild, "~> 0.2", runtime: Mix.env() == :dev},
     ]
   end
 
@@ -63,7 +64,13 @@ defmodule HyperSchedule.MixProject do
       setup: ["deps.get", "ecto.setup", "cmd npm install --prefix assets"],
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
-      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"]
+      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
+      "assets.deploy": [
+        "cmd --cd assets npm run deploy",
+        "cmd cp ./assets/static/* ./priv/static",
+        "esbuild default --minify",
+        "phx.digest"
+      ]
     ]
   end
 end

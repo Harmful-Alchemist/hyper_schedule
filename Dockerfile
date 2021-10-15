@@ -27,11 +27,9 @@ COPY assets assets
 # Tailwind scans files in the lib dir to purge the css classes
 COPY lib lib
 RUN npm --prefix ./assets ci --progress=false --no-audit --loglevel=error
-RUN npm run --prefix ./assets deploy
 COPY native/scheduling/src native/scheduling/src
 COPY native/scheduling/Cargo.toml native/scheduling/Cargo.toml
-RUN mix phx.digest
-
+RUN mix assets.deploy
 # compile and build release
 # uncomment COPY if rel/ exists
 # COPY rel rel
