@@ -5,9 +5,9 @@
         </h3>
         <form phx-submit="select-date-range" id="select-date-range">
             <label for="start-date">Start date schedule:</label>
-            <input type="date" id="start-date" name="start-date" value="<%= @start_date %>"/>
+            <input type="date" id="start-date" name="start-date" value={@start_date}/>
             <label for="end-date">End date schedule:</label>
-            <input type="date" id="end-date" name="end-date" value="<%= @end_date %>"/>
+            <input type="date" id="end-date" name="end-date" value={@end_date}/>
             <button class="inline-block text-sm bg-white p-2 rounded shadow text-gray-600 border border-gray-200"
             >Select for range
             </button>
@@ -47,34 +47,34 @@
         </tbody>
     </table>
     <div>
-        <%= f = form_for @changeset, "#", [phx_submit: :add_participant, class: "p-10", id: "participant-form"] %>
+        <.form let={f} for={@changeset} phx-submit="add_participant" class="p-10", id="participant-form">
         <%= label f, :name %>
         <%= text_input f, :name, class: "border-black border rounded p-2" %>
         <%= error_tag f, :name %>
 
         <%= submit "Add", class: "inline-block text-sm bg-white p-2 rounded shadow text-gray-600 border border-gray-200"%>
-        </form>
+        </.form>
         <%= if length(@participants) > 0 do %>
         <button phx-click="schedule"
                 class="inline-block text-sm bg-white p-2 rounded shadow text-gray-600 border border-gray-200">Hyper
             Schedule!
         </button>
-        <%= _f = form_for @changeset, Routes.download_path(@socket, :csv), [target: "_blank", id: "csv_form"] %>
+        <%= form_for @changeset, Routes.download_path(@socket, :csv), [target: "_blank", id: "csv_form"], fn _f -> %>
         <%= for {participant, i} <- Enum.with_index(@participants) |> Enum.reverse() do %>
-        <input name="name>><%= i %>" type="hidden" value="<%= participant.name %>" />
-        <input name="blocked<%= i %>" type="hidden" value="<%= Enum.join(participant.blocked, ",") %>" />
-        <input name="scheduled>><%= i %>" type="hidden" value="<%= Enum.join(participant.scheduled, ",") %>" />
+        <input name={"name>>#{i}"} type="hidden" value={participant.name} />
+        <input name={"blocked#{i}"} type="hidden" value={Enum.join(participant.blocked, ",")} />
+        <input name={"scheduled>>#{i}"} type="hidden" value={Enum.join(participant.scheduled, ",")} />
         <% end %>
         <%= submit "Download CSV", class: "inline-block text-sm bg-white p-2 rounded shadow text-gray-600 border border-gray-200", id: "download_csv"%>
-        </form>
+        <% end %>
         <% end %>
     </div>
     <div class="p-10 space-y-4">
         <%= for participant <- @participants |> Enum.reverse() do %>
         <div class="bg-purple-100 rounded-xl flex items-baseline justify-between p-5">
-            <form phx-submit="blocked-dates" id="blocked-dates<%= participant.name %>">
+            <form phx-submit="blocked-dates" id={"blocked-dates#{participant.name}"}>
                 <label for="name">name</label>
-                <input type="text" value="<%= participant.name %>" name="name"><% #<!-- TODO should be disabled, but still get the value --> %>
+                <input type="text" value={participant.name} name="name"><% #<!-- TODO should be disabled, but still get the value --> %>
                 <label for="blocked-date">Blocked on:</label>
                 <input type="date" name="blocked-date"/>
                 <label for="repeats">Repeats:</label>
@@ -82,10 +82,10 @@
                     <option value="never">never</option>
                     <option value="weekly">weekly for one year</option>
                     <option value="monthly">monthly by date in month for one year</option>
-                </select></select>
+                </select>
                 <%= submit "Add blocked date(s)", class: "inline-block text-sm bg-white p-2 rounded shadow text-gray-600 border border-gray-200" %>
             </form>
-            <button phx-click="remove-participant" phx-value-name="<%= participant.name %>"
+            <button phx-click="remove-participant" phx-value-name={participant.name}
                     class="inline-block text-sm bg-white p-2 rounded shadow text-red-600 border border-gray-200">Remove
             </button>
         </div>

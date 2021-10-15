@@ -21,8 +21,8 @@ defmodule HyperSchedule.CalendarDayComponent do
       end)
       |> Enum.map(& &1.name)
 
-    ~L"""
-    <td phx-click="pick-date" phx-value-date="<%= @day %>" class="<%= @day_class %>">
+    ~H"""
+    <td phx-click="pick-date" phx-value-date={ @day } class={ @day_class }>
       <%= String.slice(@day, 8..100) %>
       <%= if !is_nil(scheduled_on_day) do %>
       <div class="text-bold bg-purple"><%= scheduled_on_day.name %></div>

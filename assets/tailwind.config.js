@@ -3,6 +3,7 @@ module.exports = {
     enabled: true,
     content: ['../lib/**/*.ex',
     '../lib/**/*.leex',
+    '../lib/**/*.heex',
     '../lib/**/*.eex',
     './js/**/*.js']
   },

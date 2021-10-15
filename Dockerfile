@@ -28,12 +28,11 @@ COPY assets assets
 COPY lib lib
 RUN npm --prefix ./assets ci --progress=false --no-audit --loglevel=error
 RUN npm run --prefix ./assets deploy
+COPY native/scheduling/src native/scheduling/src
+COPY native/scheduling/Cargo.toml native/scheduling/Cargo.toml
 RUN mix phx.digest
 
 # compile and build release
-COPY native/scheduling/src native/scheduling/src
-COPY native/scheduling/Cargo.toml native/scheduling/Cargo.toml
-
 # uncomment COPY if rel/ exists
 # COPY rel rel
 RUN mix do compile, release

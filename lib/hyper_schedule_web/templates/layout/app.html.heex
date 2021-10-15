@@ -5,9 +5,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>HyperSchedule · Fast scheduling</title>
-    <link rel="stylesheet" href="<%= Routes.static_path(@conn, "/css/app.css") %>"/>
+    <link rel="stylesheet" href={ Routes.static_path(@conn, "/css/app.css") }/>
     <%= csrf_meta_tag() %>
-    <script defer type="text/javascript" src="<%= Routes.static_path(@conn, "/js/app.js") %>"></script>
+    <script defer type="text/javascript" src={ Routes.static_path(@conn, "/js/app.js") }></script>
   </head>
   <body>
     <header class="header-2">
@@ -15,12 +15,12 @@
           <div class="container px-4 mx-auto md:flex md:items-center">
 
             <div class="flex justify-between items-center">
-              <a href="<%= Routes.static_path(@conn, "/") %>" class="font-bold text-xl text-purple-600">Hyper Schedule</a>
+              <a href={ Routes.static_path(@conn, "/") } class="font-bold text-xl text-purple-600">Hyper Schedule</a>
             </div>
 
             <div class="md:flex flex-col md:flex-row md:ml-auto mt-3 md:mt-0">
-              <a href="<%= Routes.static_path(@conn, "/") %>" class="p-2 lg:px-4 md:mx-2 text-white rounded bg-purple-600">Home</a>
-              <a href="<%= Routes.static_path(@conn, "/about") %>" class="p-2 lg:px-4 md:mx-2 text-gray-600 rounded hover:bg-gray-200 hover:text-gray-700 transition-colors duration-300">About</a>
+              <a href={ Routes.static_path(@conn, "/") } class="p-2 lg:px-4 md:mx-2 text-white rounded bg-purple-600">Home</a>
+              <a href={ Routes.static_path(@conn, "/about") } class="p-2 lg:px-4 md:mx-2 text-gray-600 rounded hover:bg-gray-200 hover:text-gray-700 transition-colors duration-300">About</a>
             </div>
           </div>
 
