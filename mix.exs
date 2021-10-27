@@ -50,6 +50,7 @@ defmodule HyperSchedule.MixProject do
       {:floki, ">= 0.27.0", only: :test},
       {:timex, "~> 3.6", only: :test},
       {:esbuild, "~> 0.2", runtime: Mix.env() == :dev},
+      {:dialyxir, only: :dev, runtime: false}
     ]
   end
 

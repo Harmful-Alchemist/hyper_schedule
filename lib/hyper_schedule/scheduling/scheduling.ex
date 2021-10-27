@@ -1,11 +1,11 @@
 defmodule HyperSchedule.Scheduling do
   use Rustler, otp_app: :hyper_schedule, crate: "scheduling"
 
-  @spec schedule(list(HyperScheduling.Participant), list(integer)) ::
-          list(HyperScheduling.Participant)
+  @spec schedule(list(HyperScheduling.Participant), list(String.t())) ::
+          {:ok | :error, list(HyperScheduling.Participant) | String.t()}
   def schedule(_participants, _slots), do: :erlang.nif_error(:nif_not_loaded)
 
-  @spec shift(String.t(), integer, atom) :: {:ok | :error, String.t()}
+  @spec shift(String.t(), integer, :day | :month) :: {:ok | :error, String.t()}
   def shift(date, amount, unit \\ :day) do
     case unit do
       :day -> shift_day(date, amount)

@@ -274,9 +274,7 @@ defmodule HyperScheduleWeb.CalendarLiveTest do
     assert toggled_back =~ "#{Timex.format!(first_sunday, "%d", :strftime)}\n  \n        \n</td>"
 
     assert toggled_back =~
-             "#{Timex.format!(next_mon, "%d", :strftime)}\n  \n  <div class=\"text-bold bg-purple\">#{
-               name
-             }</div>"
+             "#{Timex.format!(next_mon, "%d", :strftime)}\n  \n  <div class=\"text-bold bg-purple\">#{name}</div>"
 
     assert toggled_back =~ "phx-value-date=\"#{sat_formatted}\" class=\"#{@weekend}\""
     assert toggled_back =~ "phx-value-date=\"#{sun_formatted}\" class=\"#{@weekend}\""

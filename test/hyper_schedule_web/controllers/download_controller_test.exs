@@ -55,6 +55,5 @@ defmodule HyperScheduleWeb.DownloadControllerTest do
 #{first_day_of_month |> Timex.shift(days: 3) |> Timex.format!("%Y-%m-%d", :strftime)},name1
 #{first_day_of_month |> Timex.shift(days: 4) |> Timex.format!("%Y-%m-%d", :strftime)},name2
 #{first_day_of_month |> Timex.shift(days: 5) |> Timex.format!("%Y-%m-%d", :strftime)},name3"
-
   end
 end
