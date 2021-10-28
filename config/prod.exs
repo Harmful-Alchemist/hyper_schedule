@@ -46,9 +46,8 @@ use Mix.Config
 # We also recommend setting `force_ssl` in your endpoint, ensuring
 # no data is ever sent via http, always redirecting to https:
 #
-#     config :hyper_schedule, HyperScheduleWeb.Endpoint,
-#       force_ssl: [hsts: true]
-#
+     config :hyper_schedule, HyperScheduleWeb.Endpoint,
+            load_from_system_env: true #For swagger generation
 # Check `Plug.SSL` for all available options in `force_ssl`.
 
 # Finally import the config/prod.secret.exs which loads secrets

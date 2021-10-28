@@ -29,8 +29,8 @@ COPY lib lib
 RUN npm --prefix ./assets ci --progress=false --no-audit --loglevel=error
 COPY native/scheduling/src native/scheduling/src
 COPY native/scheduling/Cargo.toml native/scheduling/Cargo.toml
-RUN mix assets.deploy
 RUN mix phx.swagger.generate
+RUN mix assets.deploy
 # compile and build release
 # uncomment COPY if rel/ exists
 # COPY rel rel
