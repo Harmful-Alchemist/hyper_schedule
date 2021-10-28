@@ -2,7 +2,7 @@ defmodule HyperSchedule.Scheduling do
   use Rustler, otp_app: :hyper_schedule, crate: "scheduling"
 
   @spec schedule(list(HyperScheduling.Participant), list(String.t())) ::
-          {:ok | :error, list(HyperScheduling.Participant) | String.t()}
+          {:ok, list(HyperScheduling.Participant)} | {:error, String.t()}
   def schedule(_participants, _slots), do: :erlang.nif_error(:nif_not_loaded)
 
   @spec shift(String.t(), integer, :day | :month) :: {:ok | :error, String.t()}
