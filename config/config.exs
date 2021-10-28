@@ -32,6 +32,19 @@ config :hyper_schedule, HyperScheduleWeb.Endpoint,
   pubsub_server: HyperSchedule.PubSub,
   live_view: [signing_salt: "KxkgIFJ3"]
 
+# Configure Swagger
+config :hyper_schedule, :phoenix_swagger,
+  swagger_files: %{
+    "priv/static/swagger.json" => [
+      # phoenix routes will be converted to swagger paths
+      router: HyperScheduleWeb.Router,
+      # (optional) endpoint config used to set host, port and https schemes.
+      endpoint: HyperScheduleWeb.Endpoint
+    ]
+  }
+
+config :phoenix_swagger, json_library: Jason
+
 # Configures Elixir's Logger
 config :logger, :console,
   format: "$time $metadata[$level] $message\n",

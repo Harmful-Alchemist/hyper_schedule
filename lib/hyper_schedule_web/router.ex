@@ -28,6 +28,28 @@ defmodule HyperScheduleWeb.Router do
     post "/schedule", ScheduleController, :schedule_api
   end
 
+  def swagger_info do
+    %{
+      schemes: ["http", "https"],
+      info: %{
+        version: "1",
+        title: "Hyper Schedule",
+        description: "Generate a schedule from participants and dates"
+      },
+      consumes: "application/json",
+      produces: "application/json",
+      tags: [
+        %{name: "Schedule", description: "Scheduling of dates"}
+      ]
+    }
+  end
+
+  scope "/api/v1/swagger" do
+    forward "/", PhoenixSwagger.Plug.SwaggerUI,
+      otp_app: :hyper_schedule,
+      swagger_file: "swagger.json"
+  end
+
   # Enables LiveDashboard only for development
   #
   # If you want to use the LiveDashboard in production, you should put

@@ -4,10 +4,10 @@ defmodule HyperSchedule.MixProject do
   def project do
     [
       app: :hyper_schedule,
-      version: "0.1.8",
+      version: "0.1.9",
       elixir: "~> 1.12",
       elixirc_paths: elixirc_paths(Mix.env()),
-      compilers: [:phoenix, :gettext] ++ Mix.compilers(),
+      compilers: [:phoenix, :gettext] ++ Mix.compilers() ++ [:phoenix_swagger],
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps()
@@ -50,7 +50,9 @@ defmodule HyperSchedule.MixProject do
       {:floki, ">= 0.27.0", only: :test},
       {:timex, "~> 3.6", only: :test},
       {:esbuild, "~> 0.2", runtime: Mix.env() == :dev},
-      {:dialyxir, only: :dev, runtime: false}
+      {:dialyxir, only: :dev, runtime: false},
+      {:phoenix_swagger, "~> 0.8"},
+      {:ex_json_schema, "~> 0.5"}
     ]
   end
 
